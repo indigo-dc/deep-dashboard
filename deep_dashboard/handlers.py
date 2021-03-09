@@ -21,7 +21,6 @@ import aiohttp_security
 import aiohttp_session
 import aiohttp_session.cookie_storage
 
-from deep_dashboard import auth
 from deep_dashboard import utils
 
 routes = web.RouteTableDef()
@@ -53,7 +52,7 @@ async def logout(request):
 
 @routes.get('/login/iam', name="login")
 async def iam_login(request):
-    client = auth.get_iam_client()
+    client = request.app.iam_client
 
     # Check if is not redirect from provider
     if client.shared_key not in request.query:

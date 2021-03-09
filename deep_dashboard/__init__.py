@@ -39,6 +39,7 @@ def init(args):
         loader=jinja2.FileSystemLoader(tpl_path)
     )
 
+    app.iam_client = auth.get_iam_client()
     static_path = pathlib.Path(__file__).parent / "static"
     handlers.routes.static('/static', static_path, name="static")
 
