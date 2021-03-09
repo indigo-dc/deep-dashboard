@@ -4,3 +4,10 @@
 pbr>=4.1.0
 
 aiohttp>=3.6.2
+aiohttp_jinja2
+aiohttp_session
+aiohttp_security
+
+aioauth-client
+
+cryptography

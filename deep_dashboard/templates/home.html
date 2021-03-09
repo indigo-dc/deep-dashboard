@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--style>
+.jumbotron{
+ border: 2px solid black;
+ padding: 25px;
+}
+</style-->
+
+<div class = "jumbotron jumbotron-fluid header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7">
+                <h1 class="display-3">DEEP Training Dashboard</h1>
+                <p>
+                    Welcome to the 
+                    <a href="https://deep-hybrid-datacloud.eu/">DEEP-Hybrid-DataCloud</a>
+                    training facility Dashboard. From this portal you will be able to
+                    train any model from the 
+                    <a href="https://marketplace.deep-hybrid-datacloud.eu"/>DEEP Marketplace</a> or your own built model.
+                 </p>
+                 <p>
+                    Please refer to the <a href="https://docs.deep-hybrid-datacloud.eu/">documentation</a> for more information.
+                 </p>
+                 {% if current_user.authenticated %}
+                    <a href="{{ url('logout') }}">Logout</a>
+                {% else %}
+                 <p>
+                    <a class="btn btn-primary btn-lg" role="button" href="{{ url("login") }}">Login with the DEEP IAM &raquo;</a>
+                 </p>
+                {% endif %}
+            </div>
+            <div class="col-lg-5">
+                <img src="{{ url('static', filename='images/deep-cloud.png') }}"></img>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
