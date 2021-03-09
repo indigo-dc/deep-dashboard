@@ -57,8 +57,6 @@ async def iam_login(request):
 
     # Check if is not redirect from provider
     if client.shared_key not in request.query:
-
-        print("VAMOSSS A ", client.get_authorize_url(access_type='offline'))
         # Redirect client to provider
         return web.HTTPTemporaryRedirect(
             client.get_authorize_url(access_type='offline')
