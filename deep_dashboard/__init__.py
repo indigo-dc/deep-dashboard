@@ -39,7 +39,8 @@ async def hello(request):
     context = {
         "current_user": {
             "authenticated": is_authenticated,
-        }
+        },
+        "templates": {}
     }
     if is_authenticated:
         context["current_user"]["username"] = session["username"]

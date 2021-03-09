@@ -1,4 +1,3 @@
-{% extends "base.html" %}
 {% block content %}
 <div class="container mt-2" id="cardsContainer" xmlns="http://www.w3.org/1999/html">
 
@@ -11,7 +10,7 @@
                 components in a flexible, integrated, and extensible manner.
                 <br>
                 <div class="text-center">
-                    <a class="btn btn-outline-dark rounded mx-1 my-3 p-2" href="{{ url_for('configure', selected_module='deep-oc-generic-dev', run='jupyterlab', toscaname='minimal') }}">
+                    <a class="btn btn-outline-dark rounded mx-1 my-3 p-2" href="#">
                         <i class="fas fa-atom"></i> Create environment
                     </a>
                 </div>
@@ -43,7 +42,7 @@
             </div>
 
             <div class="btn-group btn-group-sm mx-auto">
-                <a class="btn btn-outline-dark rounded mx-1 my-3 p-2" href="{{ url_for('configure', selected_module=modulename) }}">
+                <a class="btn btn-outline-dark rounded mx-1 my-3 p-2" href="#">
                 Train module
                 </a>
                 {% if modulename != 'external' %}
