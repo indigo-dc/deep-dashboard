@@ -22,6 +22,7 @@ import aiohttp_jinja2
 import aiohttp_security
 import aiohttp_session
 import aiohttp_session.cookie_storage
+import aiohttp_session_flash
 from cryptography import fernet
 import jinja2
 
@@ -36,6 +37,7 @@ def init(args):
     tpl_path = pathlib.Path(__file__).parent / "templates"
     aiohttp_jinja2.setup(
         app,
+        context_processors=[aiohttp_session_flash.context_processor],
         loader=jinja2.FileSystemLoader(tpl_path)
     )
 
@@ -47,6 +49,7 @@ def init(args):
 
     # secret_key must be 32 url-safe base64-encoded bytes
     fernet_key = fernet.Fernet.generate_key()
+
     secret_key = base64.urlsafe_b64decode(fernet_key)
 
     storage = aiohttp_session.cookie_storage.EncryptedCookieStorage(
@@ -57,5 +60,7 @@ def init(args):
 
     policy = aiohttp_security.SessionIdentityPolicy()
     aiohttp_security.setup(app, policy, auth.IamAuthorizationPolicy())
+
+    app.middlewares.append(aiohttp_session_flash.middleware)
 
     return app

@@ -1,5 +1,4 @@
-{% if flashed_messages %}
-{% for category, message in flashed_messages %}
+{% for category, message in get_flashed_messages() %}
 {% if category == 'message' %}
     {% set category = 'info' %}
 {% endif %}
@@ -8,4 +7,3 @@
       {{ message }}
   </div>
 {% endfor %}
-{% endif %}

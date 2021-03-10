@@ -9,6 +9,7 @@ aiohttp_session
 aiohttp_security
 
 aioauth-client
+aiohttp_session_flash
 
 cryptography
 

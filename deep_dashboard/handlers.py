@@ -16,6 +16,7 @@
 
 
 from aiohttp import web
+import aiohttp_session_flash as flash
 import aiohttp_jinja2
 import aiohttp_security
 import aiohttp_session
@@ -86,25 +87,31 @@ async def iam_login(request):
     return redirect_response
 
 
-@routes.get('/deployments', name="deployments")
-@aiohttp_jinja2.template('deployments.html')
-async def deployments(request):
+async def _get_context(request):
     is_authenticated = not await aiohttp_security.is_anonymous(request)
-    if not is_authenticated:
-        session = await aiohttp_session.get_session(request)
-        session["next"] = "deployments"
-        return web.HTTPFound("/")
 
     session = await aiohttp_session.get_session(request)
     context = {
         "current_user": {
             "authenticated": is_authenticated,
         },
-        "deployments": [],
     }
     if is_authenticated:
         context["current_user"]["username"] = session["username"]
         context["current_user"]["gravatar"] = session["gravatar"]
+    return context
+
+
+@routes.get("/deployments", name="deployments")
+@aiohttp_jinja2.template('deployments.html')
+async def get_deployments(request):
+    context = await _get_context(request)
+    context["deployments"] = []
+
+    if not context["current_user"].get("authenticated"):
+        session = await aiohttp_session.get_session(request)
+        session["next"] = "deployments"
+        return web.HTTPFound("/")
 
     cli = await orchestrator.get_client(
         config.CONF.orchestrator_url,
@@ -114,9 +121,38 @@ async def deployments(request):
     try:
         context["deployments"] = cli.deployments.list()
     except orpy.exceptions.ClientException as e:
-        context["flashed_messages"] = [
-            ("danger",
-             f"Error retrieving deployment list: \n {e.message}"),
-        ]
+        flash.flash(
+            request,
+            ("danger", f"Error retrieving deployment list: {e.message}"),
+        )
     finally:
         return context
+
+
+# FIXME(aloga): this is not correct, we should not use a GET but a DELETE
+@routes.get("/deployments/{uuid}/delete", name="deployment.delete")
+async def delete_deployment(request):
+    context = await _get_context(request)
+
+    if not context["current_user"].get("authenticated"):
+        session = await aiohttp_session.get_session(request)
+        session["next"] = "deployments"
+        return web.HTTPFound("/")
+
+    uuid = request.match_info['uuid']
+
+    cli = await orchestrator.get_client(
+        config.CONF.orchestrator_url,
+        request
+    )
+
+    try:
+        cli.deployments.delete(uuid)
+    except orpy.exceptions.ClientException as e:
+        flash.flash(
+            request,
+            ("danger", f"Error deleting deployment {uuid}: {e.message}")
+        )
+    finally:
+        request["context"] = context
+        return web.HTTPFound("/deployments")
