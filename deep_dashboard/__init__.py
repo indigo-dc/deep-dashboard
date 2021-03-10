@@ -51,7 +51,7 @@ def init(args):
 
     storage = aiohttp_session.cookie_storage.EncryptedCookieStorage(
         secret_key,
-        cookie_name='API_SESSION'
+        cookie_name='DEEPDASHBOARD'
     )
     aiohttp_session.setup(app, storage)
 

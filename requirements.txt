@@ -11,3 +11,5 @@ aiohttp_security
 aioauth-client
 
 cryptography
+
+orpy>=1.0.1

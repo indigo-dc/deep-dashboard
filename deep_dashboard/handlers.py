@@ -20,8 +20,11 @@ import aiohttp_jinja2
 import aiohttp_security
 import aiohttp_session
 import aiohttp_session.cookie_storage
+import orpy.exceptions
 
+from deep_dashboard import config
 from deep_dashboard import utils
+from deep_dashboard import orchestrator
 
 routes = web.RouteTableDef()
 
@@ -31,6 +34,14 @@ routes = web.RouteTableDef()
 async def hello(request):
     is_authenticated = not await aiohttp_security.is_anonymous(request)
     session = await aiohttp_session.get_session(request)
+
+    next_url = session.get("next")
+    if next_url and is_authenticated:
+        next_url = request.app.router.named_resources().get(next_url)
+        del session["next"]
+        if next_url:
+            return web.HTTPFound(next_url.url_for())
+
     context = {
         "current_user": {
             "authenticated": is_authenticated,
@@ -73,3 +84,39 @@ async def iam_login(request):
     redirect_response = web.HTTPFound("/")
     await aiohttp_security.remember(request, redirect_response, user_id)
     return redirect_response
+
+
+@routes.get('/deployments', name="deployments")
+@aiohttp_jinja2.template('deployments.html')
+async def deployments(request):
+    is_authenticated = not await aiohttp_security.is_anonymous(request)
+    if not is_authenticated:
+        session = await aiohttp_session.get_session(request)
+        session["next"] = "deployments"
+        return web.HTTPFound("/")
+
+    session = await aiohttp_session.get_session(request)
+    context = {
+        "current_user": {
+            "authenticated": is_authenticated,
+        },
+        "deployments": [],
+    }
+    if is_authenticated:
+        context["current_user"]["username"] = session["username"]
+        context["current_user"]["gravatar"] = session["gravatar"]
+
+    cli = await orchestrator.get_client(
+        config.CONF.orchestrator_url,
+        request
+    )
+
+    try:
+        context["deployments"] = cli.deployments.list()
+    except orpy.exceptions.ClientException as e:
+        context["flashed_messages"] = [
+            ("danger",
+             f"Error retrieving deployment list: \n {e.message}"),
+        ]
+    finally:
+        return context
