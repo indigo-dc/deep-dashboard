@@ -22,6 +22,7 @@ import aiohttp_security
 import aiohttp_session
 import aiohttp_session.cookie_storage
 import orpy.exceptions
+import requests
 
 from deep_dashboard import config
 from deep_dashboard import utils
@@ -129,6 +130,38 @@ async def get_deployments(request):
         return context
 
 
+@routes.get("/deployments/{uuid}/template", name="deployments.template")
+@aiohttp_jinja2.template('deptemplate.html')
+async def get_deployment_template(request):
+    context = await _get_context(request)
+    context["deployments"] = []
+
+    if not context["current_user"].get("authenticated"):
+        session = await aiohttp_session.get_session(request)
+        session["next"] = "deployments"
+        return web.HTTPFound("/")
+
+    uuid = request.match_info['uuid']
+
+    cli = await orchestrator.get_client(
+        config.CONF.orchestrator_url,
+        request
+    )
+
+    try:
+        template = cli.deployments.get_template(uuid).template
+        context["template"] = template
+    except orpy.exceptions.ClientException as e:
+        flash.flash(
+            request,
+            ("danger", f"Error retrieving deployment {uuid} template: "
+                       f"{e.message}"),
+        )
+        return web.HTTPFound("/deployments")
+    else:
+        return context
+
+
 # FIXME(aloga): this is not correct, we should not use a GET but a DELETE
 @routes.get("/deployments/{uuid}/delete", name="deployment.delete")
 async def delete_deployment(request):
@@ -156,3 +189,70 @@ async def delete_deployment(request):
     finally:
         request["context"] = context
         return web.HTTPFound("/deployments")
+
+
+# FIXME(aloga): this is not correct, we should not use a GET but a DELETE
+@routes.get("/deployments/{uuid}/history", name="deployments.history")
+@aiohttp_jinja2.template('deployment_summary.html')
+async def show_deployment_history(request):
+    context = await _get_context(request)
+
+    if not context["current_user"].get("authenticated"):
+        session = await aiohttp_session.get_session(request)
+        session["next"] = "deployments"
+        return web.HTTPFound("/")
+
+    uuid = request.match_info['uuid']
+
+    cli = await orchestrator.get_client(
+        config.CONF.orchestrator_url,
+        request
+    )
+
+    try:
+        deployment = cli.deployments.show(uuid)
+    except orpy.exceptions.ClientException as e:
+        flash.flash(
+            request,
+            ("danger", f'Error getting deployment {uuid}: {e.message}')
+        )
+        return web.HTTPFound("/deployments")
+
+    # Check if deployment is still in 'create_in_progress'
+    if 'deepaas_endpoint' not in deployment.outputs:
+        flash.flash(
+            request,
+            ("warning",
+             'Wait until creation is completed before you access the '
+             'training history.')
+        )
+        return web.HTTPFound("/deployments")
+
+    # Check if deployment has DEEPaaS V2
+    deepaas_url = deployment.outputs['deepaas_endpoint']
+    try:
+        versions = requests.get(deepaas_url, verify=False).json()['versions']
+        if 'v2' not in [v['id'] for v in versions]:
+            raise Exception
+    except Exception:
+        flash.flash(
+            request,
+            ("warning",
+             "You need to be running DEEPaaS V2 inside the deployment "
+             "to be able to access the training history.")
+        )
+        return web.HTTPFound("/deployments")
+
+    # Get info
+    r = requests.get(deepaas_url + '/v2/models', verify=False).json()
+    training_info = {}
+    for model in r['models']:
+        r = requests.get(
+            '{}/v2/models/{}/train/'.format(deepaas_url, model['id']),
+            verify=False
+        )
+        training_info[model['id']] = r.json()
+
+    context["deployment"] = deployment
+    context["training_info"] = training_info
+    return context

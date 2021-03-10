@@ -13,4 +13,6 @@ aiohttp_session_flash
 
 cryptography
 
+requests
+
 orpy>=1.0.1

@@ -72,10 +72,10 @@
                           Access
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                          <a class="dropdown-item" onclick="window.open('{{ deployment.outputs['deepaas_endpoint'] }}' + '/ui','_blank')" href="">DEEPaaS</a>
-                          <a class="dropdown-item" onclick="window.open('{{ deployment.outputs['jupyter_endpoint'] }}','_blank')" href="">JupyterLab</a>
-                          <a class="dropdown-item" onclick="window.open('{{ deployment.outputs['monitor_endpoint'] }}','_blank')" href="">Monitor</a>
-                          <a class="dropdown-item" onclick="window.open('{#{ url_for('deployment_summary', uuid=deployment.uuid) }#}','_blank')" href="">History</a> 
+                          <a class="dropdown-item" target="_blank" href='{{ deployment.outputs['deepaas_endpoint'] }}/ui'>DEEPaaS</a>
+                          <a class="dropdown-item" target="_blank" href='{{ deployment.outputs['jupyter_endpoint'] }}'>JupyterLab</a>
+                          <a class="dropdown-item" target="_blank" href='{{ deployment.outputs['monitor_endpoint'] }}'>Monitor</a>
+                          <a class="dropdown-item" href='{{ url('deployments.history', uuid=deployment.uuid) }}'>History</a> 
 
                         </div>
                       </div>
@@ -87,7 +87,7 @@
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                           <a class="dropdown-item" href="" data-toggle="modal" data-target="#details{{deployment.uuid}}"><span class="fas fa-bars mr-2 grey-text"></span>Details</a>
-                          <a class="dropdown-item" href="{#{ url_for('deptemplate', depid=deployment.uuid) }#}"><span class="fas fa-search mr-2 grey-text"></span>Show template</a> 
+                          <a class="dropdown-item" href="{{ url('deployments.template', uuid=deployment.uuid) }}"><span class="fas fa-search mr-2 grey-text"></span>Show template</a> 
                         </div>
                       </div>
 
