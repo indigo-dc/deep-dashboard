@@ -163,7 +163,7 @@ async def get_deployment_template(request):
 
 
 # FIXME(aloga): this is not correct, we should not use a GET but a DELETE
-@routes.get("/deployments/{uuid}/delete", name="deployment.delete")
+@routes.get("/deployments/{uuid}/delete", name="deployments.delete")
 async def delete_deployment(request):
     context = await _get_context(request)
 
