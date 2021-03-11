@@ -28,7 +28,9 @@ import jinja2
 
 from deep_dashboard import auth
 from deep_dashboard import deep_oc
-from deep_dashboard import handlers
+from deep_dashboard.handlers import base
+from deep_dashboard.handlers import deployments
+from deep_dashboard.handlers import modules
 
 
 async def init(args):
@@ -43,10 +45,10 @@ async def init(args):
     )
 
     app.iam_client = auth.get_iam_client()
-    static_path = pathlib.Path(__file__).parent / "static"
-    handlers.routes.static('/static', static_path, name="static")
 
-    app.add_routes(handlers.routes)
+    app.add_routes(base.routes)
+    app.add_routes(deployments.routes)
+    app.add_routes(modules.routes)
 
     # secret_key must be 32 url-safe base64-encoded bytes
     fernet_key = fernet.Fernet.generate_key()
@@ -64,7 +66,6 @@ async def init(args):
 
     app.middlewares.append(aiohttp_session_flash.middleware)
     app.modules = {}
-
 
     app.on_startup.append(deep_oc.load_deep_oc_as_task)
 

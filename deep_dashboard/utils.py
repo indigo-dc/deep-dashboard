@@ -16,6 +16,25 @@
 
 import hashlib
 
+import aiohttp_security
+import aiohttp_session
+import aiohttp_session.cookie_storage
+
+
+async def _get_context(request):
+    is_authenticated = not await aiohttp_security.is_anonymous(request)
+
+    session = await aiohttp_session.get_session(request)
+    context = {
+        "current_user": {
+            "authenticated": is_authenticated,
+        },
+    }
+    if is_authenticated:
+        context["current_user"]["username"] = session["username"]
+        context["current_user"]["gravatar"] = session["gravatar"]
+    return context
+
 
 def avatar(email, size):
     digest = hashlib.md5(email.lower().encode('utf-8')).hexdigest()
