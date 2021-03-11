@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import hashlib
+import hmac
 
 from aiohttp import web
 import aiohttp_session_flash as flash
@@ -25,10 +27,13 @@ import orpy.exceptions
 import requests
 
 from deep_dashboard import config
+from deep_dashboard import deep_oc
 from deep_dashboard import utils
 from deep_dashboard import orchestrator
 
 routes = web.RouteTableDef()
+
+CONF = config.CONF
 
 
 @routes.get('/', name="home")
@@ -53,6 +58,7 @@ async def hello(request):
     if is_authenticated:
         context["current_user"]["username"] = session["username"]
         context["current_user"]["gravatar"] = session["gravatar"]
+        context["templates"] = request.app.modules
     return context
 
 
@@ -115,7 +121,7 @@ async def get_deployments(request):
         return web.HTTPFound("/")
 
     cli = await orchestrator.get_client(
-        config.CONF.orchestrator_url,
+        CONF.orchestrator_url,
         request
     )
 
@@ -144,7 +150,7 @@ async def get_deployment_template(request):
     uuid = request.match_info['uuid']
 
     cli = await orchestrator.get_client(
-        config.CONF.orchestrator_url,
+        CONF.orchestrator_url,
         request
     )
 
@@ -175,7 +181,7 @@ async def delete_deployment(request):
     uuid = request.match_info['uuid']
 
     cli = await orchestrator.get_client(
-        config.CONF.orchestrator_url,
+        CONF.orchestrator_url,
         request
     )
 
@@ -205,7 +211,7 @@ async def show_deployment_history(request):
     uuid = request.match_info['uuid']
 
     cli = await orchestrator.get_client(
-        config.CONF.orchestrator_url,
+        CONF.orchestrator_url,
         request
     )
 
@@ -256,3 +262,48 @@ async def show_deployment_history(request):
     context["deployment"] = deployment
     context["training_info"] = training_info
     return context
+
+
+@routes.post("/reload", name="reload")
+async def reload(request):
+    """Load TOSCA templates and map them to modules
+
+    This function is used to refresh the TOSCA templates and the mapping
+    between modules and TOSCA templates.  A webhook is set up so that when any
+    of the repos [1][2] is updated, Github will POST to this method to refresh
+    the Dashboard. The webhook's secret has to be the same has GITHUB_SECRET in
+    the conf so that we can validate that the payload comes indeed from Github
+    and the webhook has to be configured to deliver an 'application/json'.
+
+    [1] https://github.com/deephdc/deep-oc
+    [2] https://github.com/indigo-dc/tosca-templates/tree/master/deep-oc
+    [3] https://gist.github.com/categulario/deeb41c402c800d1f6e6
+    """
+#    global toscaTemplates, toscaInfo, modules  # FIXME
+
+    # Check request comes indeed from Github
+    if CONF.github_secret:
+        if 'X-Hub-Signature' not in request.headers:
+            return web.Response(
+                text='Refresh petitions must be signed from Github.',
+                status=403
+            )
+        # FIXME(aloga): this does not work
+        signature = hmac.new(
+            CONF.github_secret,
+            request.data,
+            hashlib.sha1
+        ).hexdigest()
+        if not hmac.compare_digest(
+            signature,
+            request.headers['X-Hub-Signature'].split('=')[1]
+        ):
+            return web.Response(
+                text='Failed to verify the signature!',
+                status=403
+            )
+
+    print('Reloading modules and TOSCA templates ...')
+    await deep_oc.load_deep_oc_as_task(request.app)
+
+    return web.Response(status=201)

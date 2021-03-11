@@ -27,10 +27,11 @@ from cryptography import fernet
 import jinja2
 
 from deep_dashboard import auth
+from deep_dashboard import deep_oc
 from deep_dashboard import handlers
 
 
-def init(args):
+async def init(args):
 
     app = web.Application(debug=True)
 
@@ -62,5 +63,9 @@ def init(args):
     aiohttp_security.setup(app, policy, auth.IamAuthorizationPolicy())
 
     app.middlewares.append(aiohttp_session_flash.middleware)
+    app.modules = {}
+
+
+    app.on_startup.append(deep_oc.load_deep_oc_as_task)
 
     return app

@@ -14,5 +14,6 @@ aiohttp_session_flash
 cryptography
 
 requests
+gitpython
 
 orpy>=1.0.1
