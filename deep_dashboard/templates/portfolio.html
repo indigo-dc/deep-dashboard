@@ -42,7 +42,8 @@
             </div>
 
             <div class="btn-group btn-group-sm mx-auto">
-                <a class="btn btn-outline-dark rounded mx-1 my-3 p-2" href="#">
+                <a class="btn btn-outline-dark rounded mx-1 my-3 p-2" href="{{ url('module.configure', module=modulename) }}">
+
                 Train module
                 </a>
                 {% if modulename != 'external' %}

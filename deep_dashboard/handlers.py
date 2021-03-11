@@ -47,6 +47,7 @@ async def hello(request):
         next_url = request.app.router.named_resources().get(next_url)
         del session["next"]
         if next_url:
+            # FIXME: what happens with not name resources
             return web.HTTPFound(next_url.url_for())
 
     context = {
@@ -134,6 +135,51 @@ async def get_deployments(request):
         )
     finally:
         return context
+
+
+@routes.get("/modules/{module}/configure", name="module.configure")
+#@aiohttp_jinja2.template('createdep.html')
+async def configure_deployment(request):
+    context = await _get_context(request)
+
+    module = request.match_info["module"]
+
+    if not context["current_user"].get("authenticated"):
+        session = await aiohttp_session.get_session(request)
+        session["next"] = f"/modules/{module}/configure"
+        return web.HTTPFound("/")
+    return web.HTTPFound("/")
+#    modules = request.app.modules
+#
+#    toscaname = 'default'
+#    hardware = 'cpu'
+#    docker_tag = 'cpu'
+#    docker_tags = ['cpu']
+#    run = 'deepaas'
+#    find_slas = 'true'
+#    docker_tags = []
+#
+#    selected_tosca = modules[module]['toscas'][toscaname]
+#
+#    context["form_conf"] = {
+#        'toscaname': {
+#            'selected': toscaname,
+#            'available': list(modules[module]['toscas'].keys())
+#        },
+#        'hardware': {
+#            'selected': hardware,
+#            'available': ['CPU', 'GPU']
+#        },
+#        'docker_tag': {
+#            'selected': docker_tag,
+#            'available': docker_tags
+#        },
+#        'run': {
+#            'selected': run,
+#            'available': ['DEEPaaS', 'JupyterLab']
+#        }
+#    }
+#    return context
 
 
 @routes.get("/deployments/{uuid}/template", name="deployments.template")
