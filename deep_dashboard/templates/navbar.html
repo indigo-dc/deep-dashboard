@@ -9,6 +9,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url("home") }}">Training dashboard</a>
                 </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="{{ url("modules") }}">Module list</a>
+                </li>a
             {% if current_user["authenticated"] %}
                 <li class="nav-item active">
                     <a class="nav-link" href="{{ url("deployments") }}">Deployments</a>

@@ -32,7 +32,7 @@ routes = web.RouteTableDef()
 
 
 @routes.get("/deployments", name="deployments")
-@aiohttp_jinja2.template('deployments.html')
+@aiohttp_jinja2.template('deployments/index.html')
 async def get_deployments(request):
     context = await utils._get_context(request)
     context["deployments"] = []
@@ -59,7 +59,7 @@ async def get_deployments(request):
 
 
 @routes.get("/deployments/{uuid}/template", name="deployments.template")
-@aiohttp_jinja2.template('deptemplate.html')
+@aiohttp_jinja2.template('deployments/template.html')
 async def get_deployment_template(request):
     context = await utils._get_context(request)
     context["deployments"] = []
@@ -121,7 +121,7 @@ async def delete_deployment(request):
 
 # FIXME(aloga): this is not correct, we should not use a GET but a DELETE
 @routes.get("/deployments/{uuid}/history", name="deployments.history")
-@aiohttp_jinja2.template('deployment_summary.html')
+@aiohttp_jinja2.template('deployments/summary.html')
 async def show_deployment_history(request):
     context = await utils._get_context(request)
 

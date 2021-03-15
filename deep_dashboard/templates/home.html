@@ -2,7 +2,7 @@
 
 {% block subtitle %}
 {% if current_user.authenticated %}
- - Module list
+ - Overview
  {% else %}
  - Login
  {% endif %}
@@ -10,7 +10,7 @@
 
 {% block content %}
     {% if current_user.authenticated %}
-    {% include "portfolio.html" %}
+    {% include "overview.html" %}
     {% else %}
     {% include "login.html" %}
     {% endif %}
