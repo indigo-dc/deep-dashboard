@@ -34,7 +34,7 @@ tosca_info_defaults = {
     },
     "enable_config_form": False,
     "inputs": {},
-    "tabs": {}
+    "tabs": {},
 }
 
 

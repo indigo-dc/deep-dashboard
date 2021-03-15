@@ -1,2 +1,23 @@
+{% set active_page = "dashboard" %}
+
 {% block content %}
+ <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div class="row d-flex justify-content-center">
+        <h2>Dashboard <span class="fas fa-home"></span></h2>
+        <div class="col-md-6 mt-4 mb-2">
+            <div class="card text-dark bg-light mb-3">
+                <h4 class="card-header">DEEP Development Environment <span class="fas fa-flask"></span></h4>
+               <div class="card-body">
+                The DEEP Development Environment provides a ready to use JupyterLab instance
+                that enables you to develop code using Jupyter notebooks, text editors, terminals, and custom
+                components in a flexible, integrated, and extensible manner.
+                <div class="text-center">
+                    <a class="btn btn-outline-dark rounded mx-1 my-3 p-2" href="#">
+                        <span class="fas fa-atom"></span> Create environment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

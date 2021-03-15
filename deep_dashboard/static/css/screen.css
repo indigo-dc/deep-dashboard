@@ -1,69 +1,111 @@
-@import url(https://fonts.googleapis.com/css?family=Thasadith);
-
-body {
-    margin-bottom: 0;
+main > .container {
+  padding: 30px 15px 0;
 }
 
-.container img {
-    width: 100%;
+.splash img {
+    width: 70%;
 }
 
-.header {
+.splash {
     background: #212651;
-    background-image: url("/static/images/network.png"); /* fallback */
+    background-image: url("/static/images/network.png"); /* fallback */ 
     background-repeat: no-repeat;
     background-position: bottom;
-    color: #ffffff;
-    padding-bottom:250px;
-    font-weight: bold;
-    font-family: 'Thasadith', sans-serif;
+    padding-bottom: 300px; 
 }
 
-.header .btn {
-    font-family: sans-serif;
-    font-weight: normal;
+/* .footer { */
+/*     background-color: rgb(38, 39, 39) !important; */
+/*     color: #FFFFFF; */
+/*     padding-top: 20px; */
+/*     margin-top: 20px; */
+/* } */
+/*  */
+/* .footer li { */
+/*     list-style: none; */
+/*     position: relative; */
+/*     margin-bottom: 0; */
+/*     padding: 0.2em; */
+/* } */
+/*  */
+/* .footer span { */
+/*     margin-right: 5px; */
+/* } */
+/*  */
+/* .footer a { */
+/*     text-decoration: none; */
+/* } */
+/*  */
+/* .footer img { */
+/*     width: 100px; */
+/* } */
+
+
+/*
+ * Sidebar
+ */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  /* rtl:raw:
+  right: 0;
+  */
+  bottom: 0;
+  /* rtl:remove */
+  left: 0;
+  z-index: 100; /* Behind the navbar */
+  padding: 50px 0 0; /* Height of navbar */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
 }
 
-.navbar {
-    background-color: rgb(38, 39, 39) !important;
+@media (max-width: 767.98px) {
+  .sidebar {
+    top: 5rem;
+  }
 }
 
-.footer {
-    background-color: rgb(38, 39, 39) !important;
-    color: #FFFFFF;
-    padding-top: 50px;
-    margin-top: 50px;
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  height: calc(100vh - 50px);
+  padding-top: .5rem;
+  overflow-x: hidden;
+  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
 
-.footer li {
-    list-style: none;
-    position: relative;
-    margin-bottom: 0;
-    padding: 0.2em;
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #dddddd; 
 }
 
-.footer span {
-    margin-right: 5px;
+.sidebar .nav-link .feather {
+  margin-right: 4px;
+  color: #727272;
 }
 
-.footer a {
-    text-decoration: none;
+.sidebar .nav-link.active {
+  color: #007bff;
 }
 
-.footer img {
-    width: 100px;
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
 }
 
-nav .nav-link {
-    font-family: Arial;
-    text-transform: uppercase;
-    font-size: 14px;
-    font-weight: bold;
-    margin-right: 35px;
-    text-decoration: none;
-    color: #ffffff !important;
+.sidebar-heading {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  font-weight: bold;
 }
-nav .nav-link.active {
-    color: #33C3F0;
+
+/*
+ * Navbar
+ */
+
+.navbar-brand {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+  font-size: 1rem;
 }
 

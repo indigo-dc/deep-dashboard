@@ -1,37 +1,27 @@
-<nav class="navbar navbar-light bg-light navbar-expand-md">
-    <div class="container-fluid">
+<header class="navbar navbar-dark sticky-top bg-dark shadow navbar-expand-md p-0">
+    <a class="navbar-brand px-3" href="{{ url("home") }}">
+        <img src="{{ url('static', filename='images/logo-deep-solid-white.png') }}" alt="DEEP-Hybrid-DataCloud logo" height="30" />
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="myNavbar">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url("home") }}">Training dashboard</a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="{{ url("modules") }}">Module list</a>
-                </li>a
-            {% if current_user["authenticated"] %}
-                <li class="nav-item active">
-                    <a class="nav-link" href="{{ url("deployments") }}">Deployments</a>
-                </li>a
-            {% endif %}
-            </ul>
-            {% if current_user["authenticated"] %}
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                        <img class="rounded-circle" src="{{ current_user['gravatar'] }}"</src> {{ current_user['username'] }}<span class="caret"></span>
-                    </a>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{ url("logout") }}">Logout</a>
-                    </div>
-                </li>
-            </ul>
-            {% endif %}
-            <img src="{{ url('static', filename='images/logo-deep-solid-white.png') }}" height="30" class="d-inline-block align-top ml-auto" alt="">
-        </div>
+    <div class="collapse navbar-collapse" id="navbarTop">
+        <ul class="navbar-nav ms-auto link-light px-3">
+        {% if current_user["authenticated"] %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="dropdownMenuUser" role="button" data-bs-toggle="dropdown" aria-expanded="false" href="#">
+                    <img class="rounded-circle px-1" src="{{ current_user['gravatar'] }}"> {{ current_user['username'] }}<span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuUser">
+                    <li><a class="dropdown-item" href="{{ url("logout") }}">Logout</a></li>
+                </ul>
+            </li>
+        {% else %}
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="{{ url("login") }}">Log in</a>
+            </li>
+        {% endif %}
+        </ul>
     </div>
-</nav>
-{% block content %}{% endblock %}
+</header>

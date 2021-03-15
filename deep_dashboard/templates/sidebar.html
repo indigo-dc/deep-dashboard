@@ -1,0 +1,58 @@
+{% set active_page = active_page|default('dashboard') -%}
+
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark text-white sidebar collapse shadow ">
+  <div class="position-sticky pt-3">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+          <a class="nav-link{% if active_page == "dashboard" %} active{% endif %}" aria-current="page" href="{{ url("home") }}">
+            <i class="fas fa-home fa-fw text-muted"></i>
+            Dashboard
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link{% if active_page == "modules" %} active{% endif %}" href="{{ url("modules") }}">
+            <i class="fas fa-archive fa-fw text-muted"></i>
+            Available modules
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link{% if active_page == "deployments" %} active{% endif %}" href="{{ url("deployments") }}">
+            <i class="fas fa-dolly fa-fw text-muted"></i>
+            Deployments
+        </a>
+      </li>
+    </ul>
+
+    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+      <span>Other links</span>
+      <i class="fas fa-external-link-alt fa-fw text-muted"></i>
+    </h6>
+    <ul class="nav flex-column mb-2">
+      <li class="nav-item">
+          <a class="nav-link" href="https://iam.deep-hybrid-datacloud.eu">
+              <i class="far fa-id-badge fa-fw text-muted"></i>
+              Identity and Access
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="https://marketplace.deep-hybrid-datacloud.eu">
+              <i class="fas fa-store fa-fw text-muted"></i>
+              DEEP Marketplace
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="https://docs.deep-hybrid-datacloud.eu">
+              <i class="fas fa-book fa-fw text-muted"></i>
+              DEEP Documentation
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="https://deep-hybrid-datacloud.eu">
+              <i class="fas fa-globe fa-fw text-muted"></i>
+              Project page
+          </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
