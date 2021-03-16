@@ -16,8 +16,61 @@
 
 import aioauth_client
 import aiohttp_security.abc
+from oslo_config import cfg
 
 from deep_dashboard import config
+
+iam_opts = [
+    cfg.StrOpt(
+        'client-id',
+        help="""
+IAM Client ID to use for authentication
+"""),
+    cfg.StrOpt(
+        'client-secret',
+        secret=True,
+        help="""
+IAM Client Secret corresponding to the configured Client ID
+"""),
+    cfg.URIOpt(
+        'base-url',
+        schemes=["http", "https"],
+        help="""
+IAM Base URL.
+"""),
+    cfg.URIOpt(
+        'authorize-url',
+        default="$iam.base_url/authorize",
+        schemes=["http", "https"],
+        help="""
+IAM Authorization endpoint URL.
+"""),
+    cfg.URIOpt(
+        'access-token-url',
+        default="$iam.base_url/token",
+        schemes=["http", "https"],
+        help="""
+IAM Access Token endpoint URL.
+"""),
+    cfg.URIOpt(
+        'user-info-url',
+        default="$iam.base_url/userinfo",
+        schemes=["http", "https"],
+        help="""
+IAM User Info endpoint URL.
+"""),
+    cfg.URIOpt(
+        'redirect-uri',
+        default="http://127.0.0.1:8080/login/iam",
+        schemes=["http", "https"],
+        help="""
+Redirection endpoint. Configure this with your public IP, as configured in
+the IAM Client configuration.
+"""),
+]
+
+CONF = config.CONF
+CONF.register_opts(iam_opts, group="iam")
 
 
 class IamAuthorizationPolicy(aiohttp_security.abc.AbstractAuthorizationPolicy):
@@ -44,14 +97,14 @@ class IamAuthorizationPolicy(aiohttp_security.abc.AbstractAuthorizationPolicy):
 
 
 def get_iam_client():
-    client_id = config.CONF.client_id
-    client_secret = config.CONF.client_secret
+    client_id = CONF.iam.client_id
+    client_secret = CONF.iam.client_secret
 
-    base_url = config.CONF.base_url
-    authorize_url = base_url + '/authorize'
-    access_token_url = base_url + '/token'
-    user_info_url = base_url + '/userinfo'
-    redirect_url = "http://127.0.0.1:8080/login/iam"
+    base_url = CONF.iam.base_url
+    authorize_url = CONF.iam.authorize_url
+    access_token_url = CONF.iam.access_token_url
+    user_info_url = CONF.iam.user_info_url
+    redirect_url = CONF.iam.redirect_uri
 
     iam = aioauth_client.OAuth2Client(
         client_id=client_id,

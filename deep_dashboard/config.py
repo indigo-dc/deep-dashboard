@@ -14,31 +14,75 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class Config(object):
-    client_id = ""
-    client_secret = ""
+import pathlib
 
-    base_url = "https://iam.deep-hybrid-datacloud.eu"
-    authorize_url = base_url + '/authorize'
-    access_token_url = base_url + '/token'
-    user_info_url = base_url + '/userinfo'
-    redirect_url = "http://127.0.0.1:8080/login/iam"
+from oslo_config import cfg
 
-    orchestrator_url = "https://deep-paas.cloud.ba.infn.it/orchestrator"
+orchestrator_opts = [
+    cfg.URIOpt(
+        'url',
+        required=True,
+        schemes=["http", "https"],
+        help="""
+DEEP orchestrator endpoint.
+"""),
+    cfg.StrOpt(
+        'tosca-dir',
+        default="./tosca-templates",
+        help="""
+Path to the directory where to store the DEEP tosca templates.
+"""),
+    cfg.StrOpt(
+        'tosca-parameters-dir',
+        default="./",
+        help="""
+Path to the directory where the additional TOSCA parameters are stored.
+"""),
+    cfg.URIOpt(
+        'tosca-repo',
+        default="https://github.com/indigo-dc/tosca-templates/",
+        schemes=["http", "https", "git"],
+        help="""
+URL of the DEEP tosca templates repository.
+"""),
+    cfg.DictOpt(
+        "common-toscas",
+        default={
+            "default": "deep-oc-marathon-webdav.yml",
+            "minimal": "deep-oc-marathon.yml",
+        },
+    ),
+]
 
-    tosca_dir = "./tosca-templates"
-    tosca_repo = "https://github.com/indigo-dc/tosca-templates/"
-    tosca_parameters_dir = "./"
+opts = [
+    cfg.StrOpt(
+        "github-secret",
+        secret=True,
+        help="""
+GitHub secret to trigger reloading of modules
+"""),
+    cfg.URIOpt(
+        'deep-oc-modules',
+        default=("https://raw.githubusercontent.com/deephdc/deep-oc/"
+                 "master/MODULES.yml"),
+        schemes=["http", "https"],
+        help="""
+URL of the DEEP OC modules YAML file.
+"""),
+    cfg.StrOpt(
+        "static-path",
+        default=(pathlib.Path(__file__).parent / "static").as_posix(),
+        help="""
+Path where the static files are stored.
+"""),
+]
 
-    deep_oc_modules = ("https://raw.githubusercontent.com/deephdc/deep-oc/"
-                       "master/MODULES.yml")
-
-    common_toscas = {
-        "default": "deep-oc-marathon-webdav.yml",
-        "minimal": "deep-oc-marathon.yml",
-    }
-
-    github_secret = ""
+CONF = cfg.CONF
+CONF.register_opts(opts)
+CONF.register_opts(orchestrator_opts, group="orchestrator")
 
 
-CONF = Config()
+def parse_args(args, default_config_files=None):
+    cfg.CONF(args,
+             project='deep_dashboard',
+             default_config_files=default_config_files)

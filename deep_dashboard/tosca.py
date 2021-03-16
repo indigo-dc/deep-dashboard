@@ -41,13 +41,13 @@ tosca_info_defaults = {
 async def load_tosca_templates():
     """Load DEEP-OC related TOSCA templates from configured repository."""
     # FIXME(aloga): we need to add some logging here
-    tosca_dir = pathlib.Path(CONF.tosca_dir)
+    tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
 
     try:
         git.Repo(tosca_dir)
     except git.exc.NoSuchPathError:
         tosca_dir.mkdir(parents=True)
-        git.Repo.clone_from(CONF.tosca_repo, tosca_dir)
+        git.Repo.clone_from(CONF.orchestrator.tosca_repo, tosca_dir)
     except git.exc.InvalidGitRepositoryError:
         raise
 
@@ -87,8 +87,8 @@ async def load_tosca_templates():
         tosca_info["inputs"] = inputs
 
         # Add parameters code here
-        if CONF.tosca_parameters_dir:
-            params_dir = pathlib.Path(CONF.tosca_parameters_dir)
+        if CONF.orchestrator.tosca_parameters_dir:
+            params_dir = pathlib.Path(CONF.orchestrator.tosca_parameters_dir)
             tosca_name = tosca_file.stem
 
             for f in params_dir.glob(f"{tosca_name}.parameters.y*ml"):

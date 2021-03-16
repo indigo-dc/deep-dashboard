@@ -14,21 +14,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import pathlib
-
 from aiohttp import web
 import aiohttp_jinja2
 import aiohttp_security
 import aiohttp_session
 import aiohttp_session.cookie_storage
 
-from deep_dashboard import config
 from deep_dashboard import utils
 
-CONF = config.CONF
-
 routes = web.RouteTableDef()
-routes.static('/static', CONF.static_path, name="static")
 
 
 @routes.get('/', name="home")

@@ -98,8 +98,8 @@ async def map_modules_to_tosca(modules_metadata, tosca_templates):
 
     modules = collections.OrderedDict()
 
-    tosca_dir = pathlib.Path(CONF.tosca_dir)
-    common_toscas = CONF.common_toscas
+    tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
+    common_toscas = CONF.orchestrator.common_toscas
 
     for module_name, metadata in modules_metadata.items():
         toscas = collections.OrderedDict()

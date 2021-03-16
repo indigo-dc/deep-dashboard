@@ -43,7 +43,7 @@ async def get_deployments(request):
         return web.HTTPFound("/")
 
     cli = await orchestrator.get_client(
-        CONF.orchestrator_url,
+        CONF.orchestrator.url,
         request
     )
 
@@ -72,7 +72,7 @@ async def get_deployment_template(request):
     uuid = request.match_info['uuid']
 
     cli = await orchestrator.get_client(
-        CONF.orchestrator_url,
+        CONF.orchestrator.url,
         request
     )
 
@@ -103,7 +103,7 @@ async def delete_deployment(request):
     uuid = request.match_info['uuid']
 
     cli = await orchestrator.get_client(
-        CONF.orchestrator_url,
+        CONF.orchestrator.url,
         request
     )
 
@@ -133,7 +133,7 @@ async def show_deployment_history(request):
     uuid = request.match_info['uuid']
 
     cli = await orchestrator.get_client(
-        CONF.orchestrator_url,
+        CONF.orchestrator.url,
         request
     )
 

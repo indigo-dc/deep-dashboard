@@ -27,13 +27,19 @@ from cryptography import fernet
 import jinja2
 
 from deep_dashboard import auth
+from deep_dashboard import config
 from deep_dashboard import deep_oc
 from deep_dashboard.handlers import base
 from deep_dashboard.handlers import deployments
 from deep_dashboard.handlers import modules
 
 
+CONF = config.CONF
+
+
 async def init(args):
+
+    config.parse_args(args)
 
     app = web.Application(debug=True)
 
@@ -46,6 +52,7 @@ async def init(args):
 
     app.iam_client = auth.get_iam_client()
 
+    base.routes.static('/static', CONF.static_path, name="static")
     app.add_routes(base.routes)
     app.add_routes(deployments.routes)
     app.add_routes(modules.routes)
