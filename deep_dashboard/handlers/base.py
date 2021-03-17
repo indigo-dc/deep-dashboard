@@ -27,29 +27,15 @@ routes = web.RouteTableDef()
 
 @routes.get('/', name="home")
 @aiohttp_jinja2.template('home.html')
-async def hello(request):
-    is_authenticated = not await aiohttp_security.is_anonymous(request)
+async def home(request):
     session = await aiohttp_session.get_session(request)
 
     next_url = session.get("next")
-    if next_url and is_authenticated:
-        next_url = request.app.router.named_resources().get(next_url)
+    if next_url and request.context["current_user"]["authenticated"]:
         del session["next"]
-        if next_url:
-            # FIXME: what happens with not name resources
-            return web.HTTPFound(next_url.url_for())
+        return web.HTTPFound(next_url)
 
-    context = {
-        "current_user": {
-            "authenticated": is_authenticated,
-        },
-        "templates": {}
-    }
-    if is_authenticated:
-        context["current_user"]["username"] = session["username"]
-        context["current_user"]["gravatar"] = session["gravatar"]
-        context["templates"] = request.app.modules
-    return context
+    return request.context
 
 
 @routes.get('/logout', name='logout')

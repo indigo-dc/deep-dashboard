@@ -15,16 +15,13 @@
 # under the License.
 
 from aiohttp import web
-import aiohttp_session_flash as flash
 import aiohttp_jinja2
-import aiohttp_session
-import aiohttp_session.cookie_storage
+import aiohttp_session_flash as flash
 import orpy.exceptions
 import requests
 
 from deep_dashboard import config
 from deep_dashboard import orchestrator
-from deep_dashboard import utils
 
 CONF = config.CONF
 
@@ -34,13 +31,7 @@ routes = web.RouteTableDef()
 @routes.get("/deployments", name="deployments")
 @aiohttp_jinja2.template('deployments/index.html')
 async def get_deployments(request):
-    context = await utils._get_context(request)
-    context["deployments"] = []
-
-    if not context["current_user"].get("authenticated"):
-        session = await aiohttp_session.get_session(request)
-        session["next"] = "deployments"
-        return web.HTTPFound("/")
+    request.context["deployments"] = []
 
     cli = await orchestrator.get_client(
         CONF.orchestrator.url,
@@ -48,26 +39,20 @@ async def get_deployments(request):
     )
 
     try:
-        context["deployments"] = cli.deployments.list()
+        request.context["deployments"] = cli.deployments.list()
     except orpy.exceptions.ClientException as e:
         flash.flash(
             request,
             ("danger", f"Error retrieving deployment list: {e.message}"),
         )
     finally:
-        return context
+        return request.context
 
 
 @routes.get("/deployments/{uuid}/template", name="deployments.template")
 @aiohttp_jinja2.template('deployments/template.html')
 async def get_deployment_template(request):
-    context = await utils._get_context(request)
-    context["deployments"] = []
-
-    if not context["current_user"].get("authenticated"):
-        session = await aiohttp_session.get_session(request)
-        session["next"] = "deployments"
-        return web.HTTPFound("/")
+    request.context["deployments"] = []
 
     uuid = request.match_info['uuid']
 
@@ -78,7 +63,7 @@ async def get_deployment_template(request):
 
     try:
         template = cli.deployments.get_template(uuid).template
-        context["template"] = template
+        request.context["template"] = template
     except orpy.exceptions.ClientException as e:
         flash.flash(
             request,
@@ -87,19 +72,12 @@ async def get_deployment_template(request):
         )
         return web.HTTPFound("/deployments")
     else:
-        return context
+        return request.context
 
 
 # FIXME(aloga): this is not correct, we should not use a GET but a DELETE
 @routes.get("/deployments/{uuid}/delete", name="deployments.delete")
 async def delete_deployment(request):
-    context = await utils._get_context(request)
-
-    if not context["current_user"].get("authenticated"):
-        session = await aiohttp_session.get_session(request)
-        session["next"] = "deployments"
-        return web.HTTPFound("/")
-
     uuid = request.match_info['uuid']
 
     cli = await orchestrator.get_client(
@@ -115,7 +93,6 @@ async def delete_deployment(request):
             ("danger", f"Error deleting deployment {uuid}: {e.message}")
         )
     finally:
-        request["context"] = context
         return web.HTTPFound("/deployments")
 
 
@@ -123,13 +100,6 @@ async def delete_deployment(request):
 @routes.get("/deployments/{uuid}/history", name="deployments.history")
 @aiohttp_jinja2.template('deployments/summary.html')
 async def show_deployment_history(request):
-    context = await utils._get_context(request)
-
-    if not context["current_user"].get("authenticated"):
-        session = await aiohttp_session.get_session(request)
-        session["next"] = "deployments"
-        return web.HTTPFound("/")
-
     uuid = request.match_info['uuid']
 
     cli = await orchestrator.get_client(
@@ -181,6 +151,6 @@ async def show_deployment_history(request):
         )
         training_info[model['id']] = r.json()
 
-    context["deployment"] = deployment
-    context["training_info"] = training_info
-    return context
+    request.context["deployment"] = deployment
+    request.context["training_info"] = training_info
+    return request.context

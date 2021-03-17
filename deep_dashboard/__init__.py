@@ -72,6 +72,7 @@ async def init(args):
     aiohttp_security.setup(app, policy, auth.IamAuthorizationPolicy())
 
     app.middlewares.append(aiohttp_session_flash.middleware)
+    app.middlewares.append(auth.auth_middleware)
     app.modules = {}
 
     app.on_startup.append(deep_oc.load_deep_oc_as_task)

@@ -19,13 +19,9 @@ import hmac
 
 from aiohttp import web
 import aiohttp_jinja2
-import aiohttp_security
-import aiohttp_session
-import aiohttp_session.cookie_storage
 
 from deep_dashboard import config
 from deep_dashboard import deep_oc
-from deep_dashboard import utils
 
 CONF = config.CONF
 
@@ -35,28 +31,8 @@ routes = web.RouteTableDef()
 @routes.get('/modules', name="modules")
 @aiohttp_jinja2.template('modules/index.html')
 async def index(request):
-    is_authenticated = not await aiohttp_security.is_anonymous(request)
-    session = await aiohttp_session.get_session(request)
-
-    next_url = session.get("next")
-    if next_url and is_authenticated:
-        next_url = request.app.router.named_resources().get(next_url)
-        del session["next"]
-        if next_url:
-            # FIXME: what happens with not name resources
-            return web.HTTPFound(next_url.url_for())
-
-    context = {
-        "current_user": {
-            "authenticated": is_authenticated,
-        },
-        "templates": {}
-    }
-    if is_authenticated:
-        context["current_user"]["username"] = session["username"]
-        context["current_user"]["gravatar"] = session["gravatar"]
-        context["templates"] = request.app.modules
-    return context
+    request.context["templates"] = request.app.modules
+    return request.context
 
 
 @routes.post("/reload", name="reload")
@@ -107,11 +83,9 @@ async def reload_all_modules(request):
 @routes.get("/modules/{module}/configure", name="module.configure")
 #@aiohttp_jinja2.template('createdep.html')
 async def configure_module(request):
-    context = await utils._get_context(request)
-
     module = request.match_info["module"]
 
-    if not context["current_user"].get("authenticated"):
+    if not request.context["current_user"].get("authenticated"):
         session = await aiohttp_session.get_session(request)
         session["next"] = f"/modules/{module}/configure"
         return web.HTTPFound("/")
@@ -128,7 +102,7 @@ async def configure_module(request):
 #
 #    selected_tosca = modules[module]['toscas'][toscaname]
 #
-#    context["form_conf"] = {
+#    request.context["form_conf"] = {
 #        'toscaname': {
 #            'selected': toscaname,
 #            'available': list(modules[module]['toscas'].keys())
@@ -146,4 +120,4 @@ async def configure_module(request):
 #            'available': ['DEEPaaS', 'JupyterLab']
 #        }
 #    }
-#    return context
+#    return request.context

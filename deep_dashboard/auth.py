@@ -15,7 +15,10 @@
 # under the License.
 
 import aioauth_client
+from aiohttp import web
+from aiohttp import web_urldispatcher
 import aiohttp_security.abc
+import aiohttp_session
 from oslo_config import cfg
 
 from deep_dashboard import config
@@ -118,3 +121,30 @@ def get_iam_client():
     iam.user_info_url = user_info_url
 
     return iam
+
+
+@web.middleware
+async def auth_middleware(request, handler):
+    is_authenticated = not await aiohttp_security.is_anonymous(request)
+    session = await aiohttp_session.get_session(request)
+
+    request.context = {
+        "current_user": {
+            "authenticated": is_authenticated,
+        }
+    }
+    route_name = request.match_info.route.name
+    if isinstance(request.match_info.route, web_urldispatcher.ResourceRoute):
+        if route_name == "static":
+            pass
+        elif route_name == "login":
+            pass
+        elif not is_authenticated and (route_name != "home"):
+            session["next"] = str(request.rel_url)
+            return web.HTTPFound("/")
+
+    if is_authenticated:
+        request.context["current_user"]["username"] = session["username"]
+        request.context["current_user"]["gravatar"] = session["gravatar"]
+    response = await handler(request)
+    return response
