@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import deep_dashboard.config
 import deep_dashboard.auth
+import deep_dashboard.config
 
 
 def list_opts():
