@@ -18,4 +18,7 @@ gitpython
 
 oslo.config>=2.3.0 # Apache-2.0
 
+pyyaml
+jinja2
+
 orpy>=1.0.1
