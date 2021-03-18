@@ -24,22 +24,27 @@ import yaml
 import aiohttp
 
 from deep_dashboard import config
+from deep_dashboard import log
 from deep_dashboard import tosca
 
 CONF = config.CONF
+LOG = log.getLogger("deep_dashboard.deep_oc")
 
 
 async def get_deep_oc_modules_metadata():
     """Get and load modules in the DEEP marketplace as TOSCA files."""
 
     session = aiohttp.ClientSession()
-    async with session.get(CONF.deep_oc_modules) as r:
-        r.raise_for_status()
+    async with session.get(CONF.deep_oc_modules,
+                           raise_for_status=True) as r:
         content = await r.text()
 
     yml_list = yaml.safe_load(content)
     if not yml_list:
-        raise Exception(f'No modules found in {CONF.deep_oc_modules}')
+        msg = f'No modules found in {CONF.deep_oc_modules}'
+        LOG.error(msg)
+        # FIXME(aloga): use our own exceptions here
+        raise Exception(msg)
     modules_list = [m['module'] for m in list(yml_list)]
 
     modules_meta = collections.OrderedDict()
@@ -47,8 +52,10 @@ async def get_deep_oc_modules_metadata():
         m_name = os.path.basename(m_url).lower().replace('_', '-')
 
         if m_name in modules_meta:
-            raise Exception('Two modules are sharing the same name: '
-                            f'{m_name}')
+            msg = f'Two modules are sharing the same name: {m_name}'
+            LOG.error(msg)
+            # FIXME(aloga): use our own exceptions here
+            raise Exception(msg)
 
         # Get module description from metadata.json
         m_url = m_url.replace(
@@ -57,7 +64,8 @@ async def get_deep_oc_modules_metadata():
         )
         meta_url = f'{m_url}/master/metadata.json'
         async with session.get(meta_url,
-                               headers={"accept": "application/json"}) as r:
+                               headers={"accept": "application/json"},
+                               raise_for_status=True) as r:
             # Unfortunately we cannot use r.json() here as GitHub does not
             # send a proper content-type for the file, as it is being sent
             # as plaintext
@@ -87,7 +95,7 @@ async def get_deep_oc_modules_metadata():
 
 async def get_dockerhub_tags(session, image):
     url = f'https://registry.hub.docker.com/v1/repositories/{image}/tags'
-    async with session.get(url) as r:
+    async with session.get(url, raise_for_status=True) as r:
         aux = await r.json()
     return [i['name'] for i in aux]
 
@@ -111,13 +119,14 @@ async def map_modules_to_tosca(modules_metadata, tosca_templates):
             try:
                 if tosca_name not in tosca_templates:
                     tosca_file = tosca_dir / tosca_name
-                    async with session.get(t["url"]) as r:
+                    async with session.get(t["url"],
+                                           raise_for_status=True) as r:
                         with open(tosca_file, "w") as f:
                             f.write(await r.data())
                 toscas[t['title'].lower()] = tosca_name
             except Exception as e:
-                print(f'Error processing TOSCA in module {module_name} from '
-                      f'{t["url"]}: {e}')
+                LOG.warning(f'Error processing TOSCA in module {module_name} '
+                            f'from {t["url"]}: {e}')
 
         # Add always common TOSCAs
         for k, v in common_toscas.items():

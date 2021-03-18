@@ -32,15 +32,17 @@ from deep_dashboard import deep_oc
 from deep_dashboard.handlers import base
 from deep_dashboard.handlers import deployments
 from deep_dashboard.handlers import modules
+from deep_dashboard import log
 
 
 CONF = config.CONF
+LOG = log.LOG
 
 
 async def init(args):
+    config.configure(args)
 
-    config.parse_args(args)
-
+    LOG.info("Starting DEEP Dashboard...")
     app = web.Application(debug=True)
 
     tpl_path = pathlib.Path(__file__).parent / "templates"

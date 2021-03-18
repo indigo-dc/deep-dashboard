@@ -22,8 +22,10 @@ import git.cmd
 import git.exc
 
 from deep_dashboard import config
+from deep_dashboard import log
 
 CONF = config.CONF
+LOG = log.getLogger("deep_dashboard.tosca")
 
 tosca_info_defaults = {
     "valid": False,
@@ -40,7 +42,9 @@ tosca_info_defaults = {
 
 async def load_tosca_templates():
     """Load DEEP-OC related TOSCA templates from configured repository."""
-    # FIXME(aloga): we need to add some logging here
+
+    LOG.debug("Loading TOSCA templates")
+
     tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
 
     try:

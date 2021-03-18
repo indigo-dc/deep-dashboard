@@ -17,6 +17,7 @@
 import pathlib
 
 from oslo_config import cfg
+from oslo_log import log
 
 orchestrator_opts = [
     cfg.URIOpt(
@@ -86,3 +87,14 @@ def parse_args(args, default_config_files=None):
     cfg.CONF(args,
              project='deep_dashboard',
              default_config_files=default_config_files)
+
+
+def prepare_logging():
+    log.register_options(CONF)
+    log.set_defaults(default_log_levels=log.get_default_log_levels())
+
+
+def configure(argv, default_config_files=None):
+    prepare_logging()
+    parse_args(argv, default_config_files=default_config_files)
+    log.setup(CONF, "deep_dashboard")

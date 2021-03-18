@@ -22,6 +22,9 @@ import aiohttp_session
 from oslo_config import cfg
 
 from deep_dashboard import config
+from deep_dashboard import log
+
+LOG = log.getLogger("deep_dashboard.auth")
 
 iam_opts = [
     cfg.StrOpt(

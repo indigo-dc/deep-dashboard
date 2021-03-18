@@ -17,6 +17,7 @@ requests
 gitpython
 
 oslo.config>=2.3.0 # Apache-2.0
+oslo.log>=1.8.0 # Apache-2.0
 
 pyyaml
 jinja2
