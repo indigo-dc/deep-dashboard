@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
+
 import aioauth_client
 from aiohttp import web
 from aiohttp import web_urldispatcher
@@ -126,6 +128,31 @@ def get_iam_client():
     return iam
 
 
+async def get_token_userinfo(request, refresh_token=None):
+    client = request.app.iam_client
+
+    try:
+        if refresh_token is None:
+            call = client.get_access_token(request.query)
+        else:
+            call = client.get_access_token(refresh_token,
+                                           grant_type='refresh_token')
+        access_token, meta = await call
+    except Exception as e:
+        exc = web.HTTPInternalServerError(
+            reason=f"Could not contact IAM server: {e}"
+        )
+        raise exc
+
+    if not access_token:
+        raise web.HTTPForbidden()
+
+    _, userinfo = await client.user_info()
+    delta = datetime.timedelta(seconds=meta["expires_in"])
+    meta["expires_in"] = datetime.datetime.now() + delta
+    return meta, userinfo
+
+
 @web.middleware
 async def auth_middleware(request, handler):
     is_authenticated = not await aiohttp_security.is_anonymous(request)
@@ -146,7 +173,24 @@ async def auth_middleware(request, handler):
             session["next"] = str(request.rel_url)
             return web.HTTPFound("/")
 
+    # Renew the token if its life is too short
     if is_authenticated:
+        now = datetime.datetime.now()
+        expires = request.app.oauth_meta["expires_in"]
+        delta = datetime.timedelta(seconds=20 * 60)
+        if (expires - now) < delta:
+            refresh_token = request.app.oauth_meta.get("refresh_token")
+            try:
+                meta, userinfo = await get_token_userinfo(
+                    request,
+                    refresh_token=refresh_token
+                )
+            except web.HTTPForbidden:
+                session["next"] = str(request.rel_url)
+                return web.HTTPFound("/")
+
+            request.app.oauth_meta = meta
+
         request.context["current_user"]["username"] = session["username"]
         request.context["current_user"]["gravatar"] = session["gravatar"]
     response = await handler(request)

@@ -39,6 +39,23 @@ CONF = config.CONF
 LOG = log.LOG
 
 
+@web.middleware
+async def error_middleware(request, handler):
+    try:
+        response = await handler(request)
+        if response.status != 404:
+            return response
+        message = response.message
+    except web.HTTPServerError as e:
+        LOG.exception(e)
+        message = "Internal server error. "
+    except web.HTTPException as e:
+        message = f"Error {e.status_code}: {e.reason}"
+    aiohttp_session_flash.flash(request, ("danger", message))
+    response = web.HTTPFound("/")
+    return response
+
+
 async def init(args):
     config.configure(args)
 
@@ -75,6 +92,7 @@ async def init(args):
 
     app.middlewares.append(aiohttp_session_flash.middleware)
     app.middlewares.append(auth.auth_middleware)
+    app.middlewares.append(error_middleware)
     app.modules = {}
 
     app.on_startup.append(deep_oc.load_deep_oc_as_task)

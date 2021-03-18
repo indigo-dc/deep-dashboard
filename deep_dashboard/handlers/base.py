@@ -20,6 +20,7 @@ import aiohttp_security
 import aiohttp_session
 import aiohttp_session.cookie_storage
 
+from deep_dashboard import auth
 from deep_dashboard import utils
 
 routes = web.RouteTableDef()
@@ -56,8 +57,18 @@ async def iam_login(request):
             client.get_authorize_url(access_type='offline')
         )
 
-    _, meta = await client.get_access_token(request.query)
-    _, userinfo = await client.user_info()
+    try:
+        meta, userinfo = await auth.get_token_userinfo(request)
+        _, meta = await client.get_access_token(request.query)
+    except web.HTTPInternalServerError as e:
+        raise e
+    except Exception:
+        return web.HTTPTemporaryRedirect(
+            client.get_authorize_url(access_type='offline')
+        )
+
+    request.app.oauth_meta = meta
+
     session = await aiohttp_session.get_session(request)
     session["userinfo"] = userinfo
     session["username"] = userinfo["name"]
