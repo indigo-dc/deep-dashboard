@@ -77,3 +77,10 @@ async def reload_all_modules(request):
     await deep_oc.load_deep_oc_as_task(request.app)
 
     return web.Response(status=201)
+
+
+@routes.get("/modules/{module}/configure", name="module.configure")
+async def configure_module(request):
+    module = request.match_info["module"]  # noqa
+
+    return web.HTTPFound("/modules")
