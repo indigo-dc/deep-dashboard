@@ -150,6 +150,9 @@ async def get_token_userinfo(request, refresh_token=None):
     _, userinfo = await client.user_info()
     delta = datetime.timedelta(seconds=meta["expires_in"])
     meta["expires_in"] = datetime.datetime.now() + delta
+
+    request.app.oauth_meta = meta
+
     return meta, userinfo
 
 
@@ -188,8 +191,6 @@ async def auth_middleware(request, handler):
             except web.HTTPForbidden:
                 session["next"] = str(request.rel_url)
                 return web.HTTPFound("/")
-
-            request.app.oauth_meta = meta
 
         request.context["current_user"]["username"] = session["username"]
         request.context["current_user"]["gravatar"] = session["gravatar"]

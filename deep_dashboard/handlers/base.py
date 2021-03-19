@@ -59,15 +59,12 @@ async def iam_login(request):
 
     try:
         meta, userinfo = await auth.get_token_userinfo(request)
-        _, meta = await client.get_access_token(request.query)
     except web.HTTPInternalServerError as e:
         raise e
     except Exception:
         return web.HTTPTemporaryRedirect(
             client.get_authorize_url(access_type='offline')
         )
-
-    request.app.oauth_meta = meta
 
     session = await aiohttp_session.get_session(request)
     session["userinfo"] = userinfo
