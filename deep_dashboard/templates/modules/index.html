@@ -9,7 +9,7 @@
 {% block content %}
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h2>Marketplace <span class="fas fa-compass"></span></h2>
+    <h2>Marketplace <span class="fas fa-shopping-cart"></span></h2>
     <div class="input-group-sm mb-0 d-flex">
         <span class="input-group-text"><i class="fa fa-search"></i></span>
         <input id="cardFilter" class="form-control" type="text" onkeyup="cardFilter()" placeholder="Search...">
@@ -22,10 +22,29 @@
     <div class="col">
         <div class="card h-100 mx-2 my-2">
             <div class="card-header">
-                <span class="text-muted">Fixme | Load tags from metadata</span>
+                <span class="text-muted" style="font-size:0.9em;">
+                {% if "development" in module['keywords'] %}
+                        <i class="fas fa-tools fa-fw"></i>
+                        Development
+                {% else %}
+                        <i class="fas fa-project-diagram fa-fw"></i>
+                        Model
+                {% endif %}
+                {% for key in module['keywords'] %}
+                    {% if key == "inference" %}
+                        | Inference
+                    {% endif %}
+                    {% if key == "trainable" %}
+                        | Trainable
+                    {% endif %}
+                    {% if kety == "pre-trained" %}
+                        | Pre-trained
+                    {% endif %}
+                {% endfor %}
+                </span>
             </div>
             <div class="card-body">
-                <h5 class="card-title">{% if module['metadata']['display_name'] is defined %}{{ module['metadata']['display_name'] }}{% else %}{{ modulename }}{% endif %}</h5>
+                <h5 class="card-title">{% if module['display_name'] is defined %}{{ module['display_name'] }}{% else %}{{ modulename }}{% endif %}</h5>
                 <p class="card-text text-muted">{{ module['description'] }}</p>
 
             </div>

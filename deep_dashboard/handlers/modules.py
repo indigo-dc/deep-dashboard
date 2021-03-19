@@ -32,6 +32,7 @@ routes = web.RouteTableDef()
 @aiohttp_jinja2.template('modules/index.html')
 async def index(request):
     request.context["templates"] = request.app.modules
+    print(request.app.modules)
     return request.context
 
 

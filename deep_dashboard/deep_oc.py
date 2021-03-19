@@ -157,12 +157,11 @@ async def map_modules_to_tosca(modules_metadata, tosca_templates):
             'sources': metadata['sources'],
             'docker_tags': metadata['docker_tags'],
             'description': metadata['summary'],
-            'metadata': {
-                # FIXME(aloga): allow users to change this
-                'icon': "https://cdn4.iconfinder.com/data/icons/mosaicon-04/"
-                        "512/websettings-512.png",
-                'display_name': metadata['title']
-            }
+            'keywords': metadata.get('keywords', []),
+            # FIXME(aloga): allow users to change this
+            'icon': "https://cdn4.iconfinder.com/data/icons/mosaicon-04/"
+                    "512/websettings-512.png",
+            'display_name': metadata['title'],
         }
     await session.close()
     return modules
