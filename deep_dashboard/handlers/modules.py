@@ -22,8 +22,10 @@ import aiohttp_jinja2
 
 from deep_dashboard import config
 from deep_dashboard import deep_oc
+from deep_dashboard import log
 
 CONF = config.CONF
+LOG = log.LOG
 
 routes = web.RouteTableDef()
 
@@ -32,7 +34,6 @@ routes = web.RouteTableDef()
 @aiohttp_jinja2.template('modules/index.html')
 async def index(request):
     request.context["templates"] = request.app.modules
-    print(request.app.modules)
     return request.context
 
 
@@ -74,7 +75,7 @@ async def reload_all_modules(request):
                 status=403
             )
 
-    print('Reloading modules and TOSCA templates ...')
+    LOG.info('Reloading modules and TOSCA templates ...')
     await deep_oc.load_deep_oc_as_task(request.app)
 
     return web.Response(status=201)
