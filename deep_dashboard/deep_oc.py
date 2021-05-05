@@ -172,6 +172,7 @@ async def load_deep_oc(app):
     modules_meta = await get_deep_oc_modules_metadata()
     modules = await map_modules_to_tosca(modules_meta, tosca_templates)
     app.modules = modules
+    app.tosca_templates = tosca_templates
 
 
 async def load_deep_oc_as_task(app):

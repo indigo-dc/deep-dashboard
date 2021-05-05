@@ -82,7 +82,7 @@
                     </div>
                     <!-- DELETE -->
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_confirm_{{ deployment.uuid }}" data-bs-keyboard="false">
-                        <span class="fas fa-trash-alt mr-2"></span>Delete
+                        <span class="fas fa-trash-alt mr-2"></span> Delete
                     </button>
             </td>
         </tr>
@@ -115,10 +115,10 @@
             </div>
             <div class="modal-footer">
                 <a class="btn btn-primary text-white" role="button" data-bs-dismiss="modal">
-                    <span class="fas fa-ban mr-2"></span>Cancel</button>
+                    <span class="fas fa-ban mr-2"></span> Cancel</button>
                 </a>
                 <a class="btn btn-danger deleteBtn" role="button" href="{{ url("deployments.delete", uuid=deployment.uuid) }}">
-                    <span class="fas fa-trash-alt mr-2"></span>Delete deployment
+                    <span class="fas fa-trash-alt mr-2"></span> Delete deployment
                 </a>
             </div>
         </div>

@@ -14,8 +14,9 @@
         <span class="input-group-text"><i class="fa fa-search"></i></span>
         <input id="cardFilter" class="form-control" type="text" onkeyup="cardFilter()" placeholder="Search...">
     </div>
-
 </div>
+
+{% include 'flashed_messages.html' %} 
 
 <div class="row row-cols-1 row-cols-md-5 g-4 mb-5" id="cardsContainer">
 {% for modulename, module in templates.items() %}
@@ -50,7 +51,7 @@
             </div>
             <div class="card-footer text-center">
             <div class="btn-group btn-group-sm mx-auto mt-0">
-                <a class="btn btn-outline-dark rounded mx-1 my-0 p-2" href="{{ url('module.configure', module=modulename) }}">
+                <a class="btn btn-outline-dark rounded mx-1 my-0 p-2" href="{{ url('module.train', module=modulename) }}">
 
                 Train module
                 </a>

@@ -31,7 +31,13 @@ DEEP orchestrator endpoint.
         'tosca-dir',
         default="./tosca-templates",
         help="""
-Path to the directory where to store the DEEP tosca templates.
+Path to the directory where to store all the orchestrator TOSCA templates.
+"""),
+    cfg.StrOpt(
+        'deep-templates-dir',
+        default="deep-oc",
+        help="""
+Directory relative to $tosca_dir where the DEEP TOSCA templates are stored.
 """),
     cfg.StrOpt(
         'tosca-parameters-dir',

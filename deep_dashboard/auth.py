@@ -174,8 +174,12 @@ async def auth_middleware(request, handler):
             session["next"] = str(request.rel_url)
             return web.HTTPFound("/")
 
-    # Renew the token if its life is too short
     if is_authenticated:
+
+        # Check if user is authorized
+        await aiohttp_security.check_authorized(request)
+
+        # Renew the token if its life is too short
         now = datetime.datetime.now()
         expires = request.app.oauth_meta["expires_in"]
         delta = datetime.timedelta(seconds=20 * 60)
@@ -192,5 +196,6 @@ async def auth_middleware(request, handler):
 
         request.context["current_user"]["username"] = session["username"]
         request.context["current_user"]["gravatar"] = session["gravatar"]
+
     response = await handler(request)
     return response

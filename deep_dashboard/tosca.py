@@ -59,7 +59,7 @@ async def load_tosca_templates():
     g.pull()
 
     toscas = {}
-    deep_tpl_dir = tosca_dir / "deep-oc"
+    deep_tpl_dir = tosca_dir / CONF.orchestrator.deep_templates_dir
     for tosca_file in deep_tpl_dir.rglob("*y*ml"):
         with open(tosca_file, "r") as tpl:
             tpl = yaml.full_load(tpl)

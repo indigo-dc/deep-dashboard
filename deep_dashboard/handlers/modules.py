@@ -14,11 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
 import hashlib
 import hmac
 
 from aiohttp import web
 import aiohttp_jinja2
+import aiohttp_session_flash as flash
 
 from deep_dashboard import config
 from deep_dashboard import deep_oc
@@ -81,8 +83,136 @@ async def reload_all_modules(request):
     return web.Response(status=201)
 
 
-@routes.get("/modules/{module}/configure", name="module.configure")
-async def configure_module(request):
-    module = request.match_info["module"]  # noqa
+@routes.get("/modules/{module}/train", name="module.train")
+@aiohttp_jinja2.template('modules/train.html')
+async def configure_module_training(request):
+    module = request.match_info["module"].lower()
 
-    return web.HTTPFound("/modules")
+    if module not in request.app.modules:
+        flash.flash(
+            request,
+            ("danger", f"Module does not exist: {module}.")
+        )
+        return web.HTTPFound("/modules")
+
+    request.context["selected_module"] = module
+    module_meta = request.app.modules.get(module)
+
+    selected_tosca = request.query.get("selected_tosca",
+                                       list(module_meta["toscas"].keys())[0])
+    template_name = module_meta["toscas"][selected_tosca]
+    hardware_configuration = request.query.get("hardware_configuration",
+                                               "CPU").lower()
+    docker_tag = request.query.get("docker_tag",
+                                   module_meta["docker_tags"][0]).lower()
+    run_command = request.query.get("run_command",
+                                    "DEEPaaS")
+
+    general_configuration = {
+        "tosca_templates": {
+            "available": module_meta["toscas"].keys(),
+            "selected": selected_tosca,
+        },
+        "docker_tags": {
+            "available": module_meta["docker_tags"],
+            "selected": docker_tag,
+        },
+        "hardware_configuration": {
+            "available": ["CPU", "GPU"],
+            "selected": hardware_configuration,
+        },
+        "run_command": {
+            "available": ["DEEPaaS", "JupyterLab", "Custom command"],
+            "selected": run_command,
+        },
+    }
+
+    tosca_template = module_meta["toscas"].get(selected_tosca)
+    if tosca_template is None:
+        flash.flash(
+            request,
+            ("danger", f"TOSCA template does not exist: {tosca_template}.")
+        )
+        return web.HTTPFound("/modules")
+
+    inputs = copy.deepcopy(
+        request.app.tosca_templates[tosca_template]["inputs"]
+    )
+    inputs['docker_image'].setdefault(
+        'default',
+        request.app.modules[module]['sources']['docker_registry_repo'])
+
+    docker_tags = request.app.modules[module]['docker_tags']
+    if docker_tag not in docker_tags:
+        docker_tag = docker_tags[0]
+
+    if run_command == 'deepaas':
+        inputs['run_command']['default'] = 'deepaas-run --listen-ip=0.0.0.0'
+        if hardware_configuration == 'gpu':
+            inputs['run_command']['default'] += ' --listen-port=$PORT0'
+    elif run_command == 'jupyterlab':
+        flash.flash(
+            request,
+            ("warning", 'Remember to set a Jupyter password.')
+        )
+        inputs['run_command']['default'] = (
+            '/srv/.jupyter/run_jupyter.sh --allow-root'
+        )
+        if hardware_configuration == 'gpu':
+            inputs['run_command']['default'] = (
+                "jupyterPORT=$PORT2 " + inputs['run_command']['default']
+            )
+
+    if hardware_configuration == 'cpu':
+        inputs['num_cpus']['default'] = 1
+        inputs['num_gpus']['default'] = 0
+        inputs['run_command']['default'] = (
+            "monitorPORT=6006 " + inputs['run_command']['default']
+        )
+    elif hardware_configuration == 'gpu':
+        inputs['num_cpus']['default'] = 1
+        inputs['num_gpus']['default'] = 1
+        inputs['run_command']['default'] = (
+            "monitorPORT=$PORT1 " + inputs['run_command']['default']
+        )
+
+    # FIXME(aloga): improve conditions here
+    if run_command == "custom command":
+        inputs['run_command']['default'] = ''
+
+    inputs['docker_image']['default'] += ':{}'.format(docker_tag)
+
+    grouped = {
+        "docker": {},
+        "jupyter": {},
+        "storage": {},
+        "hardware": {},
+        "other": {},
+    }
+
+    for k, v in inputs.items():
+        if k.startswith("docker_"):
+            grouped["docker"][k] = v
+        elif k.startswith("jupyter_"):
+            grouped["jupyter"][k] = v
+        elif any([k.startswith("rclone_"),
+                  k.startswith("onedata_"),
+                  k.startswith("oneclient_"),
+                  k == "app_in_out_base_dir"]):
+            grouped["storage"][k] = v
+        elif k in ["mem_size", "num_cpus", "num_gpus"]:
+            grouped["hardware"][k] = v
+        else:
+            grouped["other"][k] = v
+
+    template_meta = {
+        "inputs": inputs,
+        "grouped": grouped,
+    }
+
+    request.context["general_configuration"] = general_configuration
+    request.context["template_meta"] = template_meta
+    request.context["template_name"] = template_name
+    request.context["slas"] = request.app.slas
+
+    return request.context

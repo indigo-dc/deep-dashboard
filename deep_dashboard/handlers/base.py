@@ -21,6 +21,7 @@ import aiohttp_session
 import aiohttp_session.cookie_storage
 
 from deep_dashboard import auth
+from deep_dashboard import sla
 from deep_dashboard import utils
 
 routes = web.RouteTableDef()
@@ -70,9 +71,13 @@ async def iam_login(request):
     session["userinfo"] = userinfo
     session["username"] = userinfo["name"]
     session["gravatar"] = utils.avatar(userinfo["email"], 26)
+    session['organisation_name'] = userinfo['organisation_name']
 
     user_id = userinfo["sub"]
 
     redirect_response = web.HTTPFound("/")
     await aiohttp_security.remember(request, redirect_response, user_id)
+
+    request.app.sla_loader = await sla.load_slas_as_task(request)
+
     return redirect_response

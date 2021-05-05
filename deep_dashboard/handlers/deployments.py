@@ -14,14 +14,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import pathlib
+
 from aiohttp import web
 import aiohttp_jinja2
 import aiohttp_session_flash as flash
 import orpy.exceptions
 import requests
+import yaml
 
 from deep_dashboard import config
+from deep_dashboard import log
 from deep_dashboard import orchestrator
+
+CONF = config.CONF
+LOG = log.LOG
 
 CONF = config.CONF
 
@@ -154,3 +161,58 @@ async def show_deployment_history(request):
     request.context["deployment"] = deployment
     request.context["training_info"] = training_info
     return request.context
+
+
+@routes.post("/deployments")
+async def create_module_training(request):
+    form_data = await request.post()
+    LOG.debug(f"Received form data: {form_data}")
+
+    template_name = form_data.get('template')
+    LOG.debug(f"Selected template file: {template_name}")
+
+    tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
+    tosca_dir = tosca_dir / CONF.orchestrator.deep_templates_dir
+    with open(tosca_dir / template_name, "r") as f:
+        template = yaml.full_load(f)
+
+    params = {}
+    if 'extra_opts.keepLastAttempt' in form_data:
+        params["keepLastAttempt"] = "true"
+    else:
+        params["keepLastAttempt"] = "false"
+
+    if form_data['extra_opts.schedtype'] == "manual":
+        if sla := form_data.get('extra_opts.selectedSLA', None):
+            LOG.debug(f"Adding SLA to deployment request {sla}")
+            template['topology_template']['policies'] = [{
+                "deploy_on_specific_site": {
+                    "type": "tosca.policies.indigo.SlaPlacement",
+                    "properties": {
+                        "sla_id": sla
+                    }
+                }
+            }]
+        else:
+            flash.flash(
+                request,
+                ("danger", "SLA does not exist.")
+            )
+
+    inputs = {k: v for (k, v) in form_data.items()
+              if not k.startswith("extra_opts.")}
+    LOG.debug("Parameters:", inputs)
+
+    template = yaml.dump(template,
+                         default_flow_style=False,
+                         sort_keys=False)
+    LOG.debug(f"Final template generated {template}")
+
+    # FIXME(aloga): Make this async
+    cli = await orchestrator.get_client(
+        CONF.orchestrator.url,
+        request
+    )
+
+    cli.deployments.create(template, parameters=inputs)
+    return web.HTTPFound("/deployments")

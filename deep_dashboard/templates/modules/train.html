@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% set active_page = "modules" %}
+
+{% block subtitle %}
+- {{ selected_module }} - Configure training
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2>Module: {{ selected_module }}</h2>
+</div>
+
+{% include 'flashed_messages.html' %} 
+
+<div class="accordion mb-3" id="accordion_config">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingGeneral">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeneral" aria-expanded="true" aria-controls="collapseGeneral">
+                General Configuration
+            </button>
+        </h2>
+        <div id="collapseGeneral" class="accordion-collapse collapse show" aria-labelledby="headingGeneral">
+            <div class="accordion-body">
+                <form class="row g-3"  action="{{ url('module.train', module=selected_module) }}"   >
+                    <div class="col-md-6">
+                        <label for="selected_tosca" class="form-label"><strong>Template:</strong></label>
+                        <select class="form-select" aria-label="Select an available template" id="selected_tosca" name="selected_tosca" onchange="this.form.submit()">
+                    {% for v in general_configuration["tosca_templates"]["available"] %}
+                        {% if v.lower() == general_configuration["tosca_templates"]["selected"]  %}
+                                <option value="{{ v.lower() }}" selected>{{ v }}</option>
+                        {% else %}
+                                <option value="{{ v.lower() }}">{{ v }}</option>
+                        {% endif %}
+                    {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="run_command" class="form-label"><strong>Command:</strong></label>
+                        <select class="form-select" aria-label="Select an available command to execute" id="run_command" name="run_command" onchange="this.form.submit()">
+                    {% for v in general_configuration["run_command"]["available"] %}
+                        {% if v.lower() == general_configuration["run_command"]["selected"]  %}
+                                <option value="{{ v.lower() }}" selected>{{ v }}</option>
+                        {% else %}
+                                <option value="{{ v.lower() }}">{{ v }}</option>
+                        {% endif %}
+                    {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="hardware_configuration" class="form-label"><strong>Hardware configuration:</strong></label>
+                        <select class="form-select" aria-label="Select an hardware configuration" id="hardware_configuration" name="hardware_configuration" onchange="this.form.submit()">
+                    {% for v in general_configuration["hardware_configuration"]["available"] %}
+                        {% if v.lower() == general_configuration["hardware_configuration"]["selected"]  %}
+                                <option value="{{ v.lower() }}" selected>{{ v }}</option>
+                        {% else %}
+                                <option value="{{ v.lower() }}">{{ v }}</option>
+                        {% endif %}
+                    {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="docker_tag" class="form-label"><strong>Docker tag:</strong></label>
+                        <select class="form-select" aria-label="Select an available Docker tag" id="docker_tag" name="docker_tag" onchange="this.form.submit()">
+                    {% for v in general_configuration["docker_tags"]["available"] %}
+                        {% if v.lower() == general_configuration["docker_tags"]["selected"]  %}
+                                <option value="{{ v.lower() }}" selected>{{ v }}</option>
+                        {% else %}
+                                <option value="{{ v.lower() }}">{{ v }}</option>
+                        {% endif %}
+                    {% endfor %}
+                        </select>
+                        <small class="form-text">You should choose the appropriate tag for your selected hardware. Check module documentation for more details if unsure.</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <form class="mt-3" id="create-form" method="post" action="{{ url('deployments') }}">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingConfig">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfig" aria-expanded="true" aria-controls="collapseConfig">
+                    Specific Configuration
+                </button>
+            </h2>
+            <div id="collapseConfig" class="accordion-collapse collapse show" aria-labelledby="headingConfig">
+                <div class="accordion-body">
+                    <div class="row g-3">
+                    {% for group, inputs in template_meta["grouped"].items() %}
+                        <div class="mt-0 border-bottom">
+                            <h5 class="mt-4">{{ group[0]|upper }}{{ group[1:] }} options:</h5>
+                            <fieldset id="f-{{ group }}">
+                                <div class="row g-3 mb-3">
+                                {% for key, value in inputs.items() %}
+                                    {% include 'modules/_input_types.html' %}
+                                {% endfor %}
+                                </div>
+                            </fieldset>
+                        </div>
+                    {% endfor %}
+                    </div>
+
+                    <div class="mt-3 text-center">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <a class="btn btn-primary btn-danger" href="{{ url('modules') }}" role="button">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingAdvanced">
+                <button class="accordion-button collapsed text-danger" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdvanced" aria-expanded="true" aria-controls="collapseAdvanced">
+                    Advanced Configuration
+                </button>
+            </h2>
+            <div id="collapseAdvanced" class="accordion-collapse collapse" aria-labelledby="headingAdvanced">
+                <div class="accordion-body">
+                    <div class="row g-3">
+                        <div class="mt-0 border-bottom"> 
+                            <h5 class="mt-4">Template name</h5>
+                            <fieldset id="f-template">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6"> 
+                                        <input class="form-control" id="template" name="template" type="text" value="{{ template_name }}" aria-label="TOSCA template" readonly>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <div class="mt-0 border-bottom">
+                            <h5 class="mt-4">Scheduling options:</h5>
+                            <fieldset id="f-advanced">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Provider selection:</strong>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="extra_opts.schedtype" value="auto" id="radioSchedTypeAuto" checked>
+                                            <label class="form-check-label" for="radioSchedTypeAuto">
+                                                Automatic
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="extra_opts.schedtype" value="manual" id="radioSchedTypeManual" {% if not slas %}disabled{% endif %}>
+                                            <label class="form-check-label" for="radioSchedTypeManual">
+                                                Manual
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" name="extra_opts.keepLastAttempt" id="keepLastAttempt">
+                                            <label class="form-check-label" for="keepLastAttempt">
+                                                Do not delete the deployment in case of failure.
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="selectProvider" class="form-label"><strong>Select provider:</strong></label>
+                                        <select class="form-select" id="selectProvider" aria-label="Select provider for manual scheduling" disabled>
+                                        {% if slas %}
+                                            {% for sla in slas %}
+                                            <option name="selectedSLA" value="{{ sla.id }}" selected>{{ sla.sitename }}: {{ sla.service_type }}</option>
+                                            {% endfor %}
+                                        {% else %}
+                                            <option name="selectedSLA" value="" selected>No SLAs available</option>
+                                        {% endif %}
+                                        </select>
+                                        <small class="form-text text-muted">
+                                            Use providers with <b>marathon</b> enabled (ie. XXX: YYY.marathon). If you want to use GPUs with your deployments
+                                            you should also select providers with <b>gpu_support: True</b>.
+                                        </small>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <a class="btn btn-primary btn-danger" href="{{ url('modules') }}" role="button">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('radioSchedTypeManual').addEventListener('input', function(event) {
+        document.getElementById('selectProvider').disabled = !this.value;
+    }, false);
+
+    document.getElementById('radioSchedTypeAuto').addEventListener('input', function(event) {
+        document.getElementById('selectProvider').disabled = this.value;
+    }, false);
+</script>
+{% endblock %}

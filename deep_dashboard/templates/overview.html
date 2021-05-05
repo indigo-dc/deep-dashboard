@@ -1,7 +1,10 @@
 {% set active_page = "dashboard" %}
 
 {% block content %}
- <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+
+{% include 'flashed_messages.html' %} 
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <div class="row d-flex justify-content-center">
         <h2>Dashboard <span class="fas fa-home"></span></h2>
         <div class="col-md-6 mt-4 mb-2">
