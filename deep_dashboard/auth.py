@@ -161,10 +161,8 @@ async def auth_middleware(request, handler):
     is_authenticated = not await aiohttp_security.is_anonymous(request)
     session = await aiohttp_session.get_session(request)
 
-    request.context = {
-        "current_user": {
-            "authenticated": is_authenticated,
-        }
+    request.context["current_user"] = {
+        "authenticated": is_authenticated,
     }
     route_name = request.match_info.route.name
     if isinstance(request.match_info.route, web_urldispatcher.ResourceRoute):

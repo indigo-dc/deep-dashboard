@@ -1,7 +1,7 @@
 {% set active_page = active_page|default('dashboard') -%}
 
-<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark text-white sidebar collapse shadow ">
-  <div class="position-sticky pt-3">
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-dark d-flex flex-column text-white sidebar collapse shadow">
+  <div class="position-sticky pt-3 flex-column mb-auto">
     <ul class="nav flex-column">
       <li class="nav-item">
           <a class="nav-link{% if active_page == "dashboard" %} active{% endif %}" aria-current="page" href="{{ url("home") }}">
@@ -27,7 +27,7 @@
       <span>Other links</span>
       <i class="fas fa-external-link-alt fa-fw text-muted"></i>
     </h6>
-    <ul class="nav flex-column mb-2">
+    <ul class="nav flex-column mb-auto">
       <li class="nav-item">
           <a class="nav-link" href="https://iam.deep-hybrid-datacloud.eu" target="_blank">
               <i class="far fa-id-badge fa-fw text-muted"></i>
@@ -54,5 +54,10 @@
       </li>
     </ul>
   </div>
+ 
+  <div class="px-2 pb-2">
+      <span class="text-muted small">
+          DEEP Dashboard version {{ meta["version"] }}
+      </span>
+  </div>
 </nav>
-

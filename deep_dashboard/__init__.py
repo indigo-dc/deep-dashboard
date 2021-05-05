@@ -33,7 +33,9 @@ from deep_dashboard.handlers import base
 from deep_dashboard.handlers import deployments
 from deep_dashboard.handlers import modules
 from deep_dashboard import log
+from deep_dashboard import version
 
+__version__ = version.__version__
 
 CONF = config.CONF
 LOG = log.LOG
@@ -53,6 +55,17 @@ async def error_middleware(request, handler):
         message = f"Error {e.status_code}: {e.reason}"
     aiohttp_session_flash.flash(request, ("danger", message))
     response = web.HTTPFound("/")
+    return response
+
+
+@web.middleware
+async def meta_middleware(request, handler):
+    request.context = {
+        "meta": {
+            "version": __version__,
+        }
+    }
+    response = await handler(request)
     return response
 
 
@@ -90,6 +103,7 @@ async def init(args):
     policy = aiohttp_security.SessionIdentityPolicy()
     aiohttp_security.setup(app, policy, auth.IamAuthorizationPolicy())
 
+    app.middlewares.append(meta_middleware)
     app.middlewares.append(aiohttp_session_flash.middleware)
     app.middlewares.append(auth.auth_middleware)
     app.middlewares.append(error_middleware)
