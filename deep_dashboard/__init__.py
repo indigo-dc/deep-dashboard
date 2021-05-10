@@ -23,6 +23,7 @@ import aiohttp_jinja2
 import aiohttp_security
 import aiohttp_session
 import aiohttp_session.cookie_storage
+import aiohttp_session.memcached_storage
 import aiohttp_session_flash
 import aiomcache
 from cryptography import fernet

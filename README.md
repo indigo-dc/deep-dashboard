@@ -7,6 +7,57 @@ Welcome to the DEEP Dashboard, a web user interface to interact with the
 
 This is still work in progress, under very heavy development.
 
+# Configuration
+
+Please check the sample configuration file that is distributed with the
+dashboard. You must pass one to the dashboard, otherwise it will refuse to
+start.
+
+## Minimal configuration
+
+The minimal set of options that you must configure in order to run the
+dashboard is the following:
+
+    [iam]
+    base_url = <IAM endpoint>
+    client_id = <OpenID Connect Client ID>
+    client_secret = <OpenID Connect Client Secret>
+
+    [orchestrator]
+    url = <orchestrator_url>
+
+As you can see, you need to create an OpenID Connect Client in an IAM instance,
+then add it to the configuration file. Assuming that you are using the DEEP
+production infrastructure, the endpoints can be configured as follows:
+
+    [iam]
+    base_url = "https://iam.deep-hybrid-datacloud.eu"
+    client_id = <OpenID Connect Client ID>
+    client_secret = <OpenID Connect Client Secret>
+
+    [orchestrator]
+    url = "https://deep-paas.cloud.ba.infn.it/orchestrator"
+
+The dashboard assumes that it has read and write permissions to the runtime
+directory that is configured in the `runtime_dir` configuration option. By
+defaul this is set to `/var/run/deep-dashboard/`.
+
+# Running the dashboard
+
+The simplest way is to use the Docker container that is provided. You can build
+the container with:
+
+    make docker-build
+
+Then you can run it with the following command (assuming that you have
+configured your dashboard in a file named `dashboard-config.conf`:
+
+    CONFIG_FILE=dashboard-config.conf make docker-run
+
+Or, directly with Docker, pulling the Docker image from Docker Hub:
+
+    docker run -ti -p 80:80 -v /path/to/dashboard-config.conf:/etc/deep-dashboard/dashboard.conf indigo-dc/deep-dashboard
+
 # Acknowledgements
 
 This software has been developed within the DEEP-Hybrid-DataCloud (Designing
