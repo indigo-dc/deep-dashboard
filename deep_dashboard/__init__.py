@@ -70,8 +70,6 @@ async def meta_middleware(request, handler):
 
 
 async def init(args):
-    config.configure(args)
-
     LOG.info("Starting DEEP Dashboard...")
     app = web.Application(debug=True)
 

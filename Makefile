@@ -52,4 +52,4 @@ clean:
 .PHONY: run 
 run: setup $(VIRTUALENV)
 	@echo 'D> Running DEEPaaS inside $(VIRTUALENV)'
-	. $(VIRTUALENV)/bin/activate; python -m aiohttp.web -H 127.0.0.1 -P 8080 $(PROJECT):init $(OPTS)
+	. $(VIRTUALENV)/bin/activate; deep-dashboard --listen-ip 127.0.0.1 --listen-port 8080 $(OPTS)

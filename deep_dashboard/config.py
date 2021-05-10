@@ -84,7 +84,27 @@ Path where the static files are stored.
 """),
 ]
 
+cli_opts = [
+    cfg.StrOpt('listen-ip',
+               help="""
+IP address on which the DEEP Dashboard will listen.
+
+The DEEP dashboard service will listen on this IP address.
+"""),
+    cfg.PortOpt('listen-port',
+                help="""
+Port on which the DEEP Dashboard will liste,.
+
+The DEEP dashboard service will listen on this port.
+"""),
+    cfg.StrOpt('listen-path',
+               help="""
+Path to the UNIX socket where the DEEP dashboard will listen.
+"""),
+]
+
 CONF = cfg.CONF
+CONF.register_cli_opts(cli_opts)
 CONF.register_opts(opts)
 CONF.register_opts(orchestrator_opts, group="orchestrator")
 
