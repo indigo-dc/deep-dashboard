@@ -149,9 +149,12 @@ async def get_token_userinfo(request, refresh_token=None):
 
     _, userinfo = await client.user_info()
     delta = datetime.timedelta(seconds=meta["expires_in"])
-    meta["expires_in"] = datetime.datetime.now() + delta
 
-    request.app.oauth_meta = meta
+    # datetime.datetime objects are not JSON serializable
+    meta["expires_in"] = (datetime.datetime.now() + delta).timestamp()
+
+    session = await aiohttp_session.get_session(request)
+    session["oauth_meta"] = meta
 
     return meta, userinfo
 
@@ -181,10 +184,12 @@ async def auth_middleware(request, handler):
 
         # Renew the token if its life is too short
         now = datetime.datetime.now()
-        expires = request.app.oauth_meta["expires_in"]
+        # expires_in is a POSIX timestamp
+        expires = session["oauth_meta"]["expires_in"]
+        expires = datetime.datetime.fromtimestamp(expires)
         delta = datetime.timedelta(seconds=20 * 60)
         if (expires - now) < delta:
-            refresh_token = request.app.oauth_meta.get("refresh_token")
+            refresh_token = session["oauth_meta"].get("refresh_token")
             try:
                 meta, userinfo = await get_token_userinfo(
                     request,

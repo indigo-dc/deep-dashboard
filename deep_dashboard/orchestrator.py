@@ -14,13 +14,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import aiohttp_session
+
 from orpy.client import client
 
 
 async def get_client(url, request):
-    iam_client = request.app.iam_client
+    session = await aiohttp_session.get_session(request)
 
-    access_token = iam_client.access_token
+    access_token = session["oauth_meta"]["access_token"]
 
     cli = client.OrpyClient(url, token=access_token)
     return cli
