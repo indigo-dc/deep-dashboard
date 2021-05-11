@@ -19,6 +19,8 @@ import pathlib
 from oslo_config import cfg
 from oslo_log import log
 
+from deep_dashboard import version
+
 orchestrator_opts = [
     cfg.URIOpt(
         'url',
@@ -130,6 +132,7 @@ CONF.register_opts(cache_opts, group="cache")
 def parse_args(args, default_config_files=None):
     cfg.CONF(args,
              project='deep_dashboard',
+             version=version.__version__,
              default_config_files=default_config_files)
 
 
