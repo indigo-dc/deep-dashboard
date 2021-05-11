@@ -16,11 +16,11 @@
 
 import pathlib
 
+import aiohttp
 from aiohttp import web
 import aiohttp_jinja2
 import aiohttp_session_flash as flash
 import orpy.exceptions
-import requests
 import yaml
 
 from deep_dashboard import config
@@ -133,10 +133,15 @@ async def show_deployment_history(request):
         )
         return web.HTTPFound("/deployments")
 
+    session = aiohttp.ClientSession()
+
     # Check if deployment has DEEPaaS V2
     deepaas_url = deployment.outputs['deepaas_endpoint']
     try:
-        versions = requests.get(deepaas_url, verify=False).json()['versions']
+        async with session.get(deepaas_url,
+                               raise_for_status=True) as r:
+            data = await r.text()
+        versions = data['versions']
         if 'v2' not in [v['id'] for v in versions]:
             raise Exception
     except Exception:
@@ -149,14 +154,17 @@ async def show_deployment_history(request):
         return web.HTTPFound("/deployments")
 
     # Get info
-    r = requests.get(deepaas_url + '/v2/models', verify=False).json()
+    async with session.get(deepaas_url + '/v2/models',
+                           verify=False,
+                           raise_for_status=False) as r:
+        r = await r.json()
+
     training_info = {}
     for model in r['models']:
-        r = requests.get(
-            '{}/v2/models/{}/train/'.format(deepaas_url, model['id']),
-            verify=False
-        )
-        training_info[model['id']] = r.json()
+        async with session.get(f'{deepaas_url}/v2/models/{model["id"]}/train/',
+                               verify=False,
+                               raise_for_status=False) as r:
+            training_info[model['id']] = await r.json()
 
     request.context["deployment"] = deployment
     request.context["training_info"] = training_info
