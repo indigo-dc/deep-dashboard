@@ -50,8 +50,6 @@ def main():
 
     app = deep_dashboard.init(sys.argv[1:])
 
-    print(CONF.listen_ip)
-    print(CONF.listen_path)
     web.run_app(
         app,
         host=CONF.listen_ip,

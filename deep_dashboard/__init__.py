@@ -27,6 +27,7 @@ import aiohttp_session_flash
 import aiomcache
 from cryptography import fernet
 import jinja2
+from oslo_concurrency import lockutils
 
 from deep_dashboard import auth
 from deep_dashboard import config
@@ -73,7 +74,14 @@ async def meta_middleware(request, handler):
 
 async def init(args):
     LOG.info("Starting DEEP Dashboard...")
+
+    runtime_dir = pathlib.Path(CONF.runtime_dir)
+
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+
     app = web.Application(debug=True)
+    app.runtime_dir = runtime_dir
+    lockutils.set_defaults(runtime_dir)
 
     tpl_path = pathlib.Path(__file__).parent / "templates"
     aiohttp_jinja2.setup(

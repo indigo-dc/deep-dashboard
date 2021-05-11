@@ -15,6 +15,11 @@
 #deep_oc_modules = https://raw.githubusercontent.com/deephdc/deep-oc/master/MODULES.yml
 
 #
+# Define the DEEP dashboard base runtime directory
+#  (string value)
+#runtime_dir = /var/run/deep-dashboard
+
+#
 # Path where the static files are stored.
 #  (string value)
 #static_path = /home/alvaro/w/rep/DEEP/deep-dashboard/deep_dashboard/static
@@ -248,7 +253,7 @@
 #
 # Path to the directory where to store all the orchestrator TOSCA templates.
 #  (string value)
-#tosca_dir = ./tosca-templates
+#tosca_dir = $runtime_dir/tosca-templates
 
 #
 # Directory relative to $tosca_dir where the DEEP TOSCA templates are stored.
@@ -258,7 +263,7 @@
 #
 # Path to the directory where the additional TOSCA parameters are stored.
 #  (string value)
-#tosca_parameters_dir = ./
+#tosca_parameters_dir = $runtime_dir/tosca-parameters-dir
 
 #
 # URL of the DEEP tosca templates repository.

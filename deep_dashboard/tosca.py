@@ -15,11 +15,13 @@
 # under the License.
 
 import pathlib
+import shutil
 import yaml
 
 import git
 import git.cmd
 import git.exc
+from oslo_concurrency import lockutils
 
 from deep_dashboard import config
 from deep_dashboard import log
@@ -40,6 +42,7 @@ tosca_info_defaults = {
 }
 
 
+@lockutils.synchronized("tosca-templates.lock", external=True)
 async def load_tosca_templates():
     """Load DEEP-OC related TOSCA templates from configured repository."""
 
@@ -52,8 +55,13 @@ async def load_tosca_templates():
     except git.exc.NoSuchPathError:
         tosca_dir.mkdir(parents=True)
         git.Repo.clone_from(CONF.orchestrator.tosca_repo, tosca_dir)
-    except git.exc.InvalidGitRepositoryError:
-        raise
+    except (git.exc.InvalidGitRepositoryError, git.exc.GitCommandError):
+        if CONF.orchestrator.purge_tosca_directory:
+            shutil.rmtree(tosca_dir)
+            tosca_dir.mkdir(parents=True)
+            git.Repo.clone_from(CONF.orchestrator.tosca_repo, tosca_dir)
+        else:
+            raise
 
     g = git.cmd.Git(tosca_dir)
     g.pull()

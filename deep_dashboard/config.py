@@ -21,6 +21,36 @@ from oslo_log import log
 
 from deep_dashboard import version
 
+opts = [
+    cfg.StrOpt(
+        "github-secret",
+        secret=True,
+        help="""
+GitHub secret to trigger reloading of modules
+"""),
+    cfg.URIOpt(
+        'deep-oc-modules',
+        default=("https://raw.githubusercontent.com/deephdc/deep-oc/"
+                 "master/MODULES.yml"),
+        schemes=["http", "https"],
+        help="""
+URL of the DEEP OC modules YAML file.
+"""),
+    cfg.StrOpt(
+        "runtime-dir",
+        default="/var/run/deep-dashboard",
+        help="""
+Define the DEEP dashboard base runtime directory
+"""),
+    cfg.StrOpt(
+        "static-path",
+        default=(pathlib.Path(__file__).parent / "static").as_posix(),
+        help="""
+Path where the static files are stored.
+"""),
+]
+
+
 orchestrator_opts = [
     cfg.URIOpt(
         'url',
@@ -31,7 +61,7 @@ DEEP orchestrator endpoint.
 """),
     cfg.StrOpt(
         'tosca-dir',
-        default="./tosca-templates",
+        default="$runtime_dir/tosca-templates",
         help="""
 Path to the directory where to store all the orchestrator TOSCA templates.
 """),
@@ -41,9 +71,15 @@ Path to the directory where to store all the orchestrator TOSCA templates.
         help="""
 Directory relative to $tosca_dir where the DEEP TOSCA templates are stored.
 """),
+    cfg.BoolOpt(
+        "purge-tosca-directory",
+        default=False,
+        help="""
+Remove $tosca_dir in case it is not a valid Git repository.
+"""),
     cfg.StrOpt(
         'tosca-parameters-dir',
-        default="./",
+        default="$runtime_dir/tosca-parameters-dir",
         help="""
 Path to the directory where the additional TOSCA parameters are stored.
 """),
@@ -61,29 +97,6 @@ URL of the DEEP tosca templates repository.
             "minimal": "deep-oc-marathon.yml",
         },
     ),
-]
-
-opts = [
-    cfg.StrOpt(
-        "github-secret",
-        secret=True,
-        help="""
-GitHub secret to trigger reloading of modules
-"""),
-    cfg.URIOpt(
-        'deep-oc-modules',
-        default=("https://raw.githubusercontent.com/deephdc/deep-oc/"
-                 "master/MODULES.yml"),
-        schemes=["http", "https"],
-        help="""
-URL of the DEEP OC modules YAML file.
-"""),
-    cfg.StrOpt(
-        "static-path",
-        default=(pathlib.Path(__file__).parent / "static").as_posix(),
-        help="""
-Path where the static files are stored.
-"""),
 ]
 
 cache_opts = [
