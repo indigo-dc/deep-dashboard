@@ -28,8 +28,7 @@ RUN groupadd memcached \
 
 WORKDIR /srv
 
-RUN git clone https://gitlab.ifca.es/deep/deep-dashboard  -b  devel
-RUN pip3 install deep-dashboard/ 
+RUN pip3 install deep-dashboard>=0.3.1
 
 RUN mkdir /etc/deep-dashboard/ \
     && mkdir /srv/deep-dashboard-runtime \ 
