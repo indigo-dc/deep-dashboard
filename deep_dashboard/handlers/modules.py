@@ -50,7 +50,6 @@ async def reload_all_modules(request):
     [2] https://github.com/indigo-dc/tosca-templates/tree/master/deep-oc
     [3] https://gist.github.com/categulario/deeb41c402c800d1f6e6
     """
-#    global toscaTemplates, toscaInfo, modules  # FIXME
 
     # Check request comes indeed from Github
     if CONF.github_secret:
