@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import asyncio
 import base64
 import pathlib
 
@@ -23,6 +24,7 @@ import aiohttp_security
 import aiohttp_session
 import aiohttp_session.cookie_storage
 import aiohttp_session_flash
+import aiomcache
 from cryptography import fernet
 import jinja2
 
@@ -87,16 +89,29 @@ async def init(args):
     app.add_routes(deployments.routes)
     app.add_routes(modules.routes)
 
-    # secret_key must be 32 url-safe base64-encoded bytes
-    fernet_key = fernet.Fernet.generate_key()
+    if CONF.cache.memcached_ip:
+        loop = asyncio.get_event_loop()
+        mc = aiomcache.Client(CONF.cache.memcached_ip,
+                              CONF.cache.memcached_port,
+                              loop=loop)
+        sess_storage = aiohttp_session.memcached_storage.MemcachedStorage(
+            mc,
+            cookie_name='DEEPDASHBOARD'
+        )
+    else:
+        LOG.warning("Not using memcached, unexpected behaviour when running "
+                    "more than one worker!")
 
-    secret_key = base64.urlsafe_b64decode(fernet_key)
+        # secret_key must be 32 url-safe base64-encoded bytes
+        fernet_key = fernet.Fernet.generate_key()
 
-    storage = aiohttp_session.cookie_storage.EncryptedCookieStorage(
-        secret_key,
-        cookie_name='DEEPDASHBOARD'
-    )
-    aiohttp_session.setup(app, storage)
+        secret_key = base64.urlsafe_b64decode(fernet_key)
+
+        sess_storage = aiohttp_session.cookie_storage.EncryptedCookieStorage(
+            secret_key,
+            cookie_name='DEEPDASHBOARD'
+        )
+    aiohttp_session.setup(app, sess_storage)
 
     policy = aiohttp_security.SessionIdentityPolicy()
     aiohttp_security.setup(app, policy, auth.IamAuthorizationPolicy())

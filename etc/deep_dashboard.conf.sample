@@ -169,6 +169,28 @@
 #fatal_deprecations = false
 
 
+[cache]
+
+#
+# From deep_dashboard
+#
+
+#
+# IP of the memcached server to use.
+#
+# If not set, we will not use memcached at all, therefore the DEEP dashboard
+# will not behave as expected when using several workers.
+#  (string value)
+#memcached_ip = <None>
+
+#
+# Port of the memcached server to use.
+#  (port value)
+# Minimum value: 0
+# Maximum value: 65535
+#memcached_port = 11211
+
+
 [iam]
 
 #

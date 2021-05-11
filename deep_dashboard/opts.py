@@ -23,4 +23,5 @@ def list_opts():
         ('DEFAULT', deep_dashboard.config.opts),
         ('iam', deep_dashboard.auth.iam_opts),
         ('orchestrator', deep_dashboard.config.orchestrator_opts),
+        ('cache', deep_dashboard.config.cache_opts),
     ]

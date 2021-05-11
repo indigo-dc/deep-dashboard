@@ -84,6 +84,23 @@ Path where the static files are stored.
 """),
 ]
 
+cache_opts = [
+    cfg.StrOpt(
+        "memcached-ip",
+        help="""
+IP of the memcached server to use.
+
+If not set, we will not use memcached at all, therefore the DEEP dashboard
+will not behave as expected when using several workers.
+"""),
+    cfg.PortOpt(
+        "memcached-port",
+        default=11211,
+        help="""
+Port of the memcached server to use.
+"""),
+]
+
 cli_opts = [
     cfg.StrOpt('listen-ip',
                help="""
@@ -107,6 +124,7 @@ CONF = cfg.CONF
 CONF.register_cli_opts(cli_opts)
 CONF.register_opts(opts)
 CONF.register_opts(orchestrator_opts, group="orchestrator")
+CONF.register_opts(cache_opts, group="cache")
 
 
 def parse_args(args, default_config_files=None):
