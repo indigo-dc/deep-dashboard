@@ -33,7 +33,7 @@ server {
 
     location /static {
       # path for static files
-      root /srv/deep-dashboard/deep_dashboard;
+      root /usr/local/lib/python3.8/dist-packages/deep_dashboard/;
     }
 }
 EOF

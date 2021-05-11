@@ -56,7 +56,7 @@ configured your dashboard in a file named `dashboard-config.conf`:
 
 Or, directly with Docker, pulling the Docker image from Docker Hub:
 
-    docker run -ti -p 80:80 -v /path/to/dashboard-config.conf:/etc/deep-dashboard/dashboard.conf indigo-dc/deep-dashboard
+    docker run -ti -p 80:80 -v /path/to/dashboard-config.conf:/etc/deep-dashboard/dashboard.conf indigodatacloud/deep-dashboard
 
 # Acknowledgements
 

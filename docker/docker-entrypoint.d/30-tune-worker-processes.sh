@@ -195,4 +195,4 @@ for n in `seq $((2*$ncpu+1))`; do
 done
 
 echo $server_string
-sed -i.bak -r 's/^( *server unix:\/tmp\/dashboard_)(.*)$/# Commented out by '"$ME"' on '"$(date)"'\n#\1\2\n'"$server_string"'/' /etc/nginx/sites-enabled/dashboard.conf
+sed -i -r 's/^( *server unix:\/tmp\/dashboard_)(.*)$/# Commented out by '"$ME"' on '"$(date)"'\n#\1\2\n'"$server_string"'/' /etc/nginx/sites-enabled/dashboard.conf
