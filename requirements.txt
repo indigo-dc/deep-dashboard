@@ -3,7 +3,7 @@
 # process, which may cause wedges in the gate later.
 pbr>=4.1.0
 
-aiohttp>=3.6.2
+aiohttp[speedups]>=3.6.2
 aiohttp_jinja2
 aiohttp_session[secure]
 aiohttp_session[aiomcache]
