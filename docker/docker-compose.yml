@@ -1,0 +1,53 @@
+version: "3.7"
+
+services:
+  dashboard-backend:
+    image: indigodatacloud/deep-dashboard-backend
+    build: 
+      context: "."
+      dockerfile: Dockerfile
+    env_file: ./local.env
+    environment:
+      OS_GITHUB_SECRET: ${GITHUB_SECRET:?err}
+      OS_IAM__BASE_URL: ${IAM_BASE_URL:?err}
+      OS_IAM__CLIENT_ID: ${IAM_CLIENT_ID:?err}
+      OS_IAM__CLIENT_SECRET: ${IAM_CLIENT_SECRET:?err}
+      OS_ORCHESTRATOR__URL: ${ORCHESTRATOR_URL:?err}
+    volumes: 
+      - ${RUNTIME_DIR:-./tmp/runtime/}:/srv/deep-dashboard-runtime
+    restart: unless-stopped
+    deploy:
+      mode: replicated
+      replicas: ${DASHBOARD_REPLICAS:-1}
+    depends_on:
+      - memcached
+    healthcheck:
+      test: ["CMD-SHELL", "test", "-S", "test -S /srv/deep-dashboard-runtime/dashboard_${HOSTNAME}.sock"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  dashboard-frontend:
+    image: openresty/openresty:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/:/etc/nginx/conf.d/
+      - ${RUNTIME_DIR:-./tmp/runtime/}:/srv/deep-dashboard-runtime
+      - ${STATIC_DIR:-../deep_dashboard/static/}:/srv/deep-dashboard-runtime/static
+    restart: unless-stopped
+    depends_on:
+      - dashboard-backend
+
+  memcached:
+    container_name: memcached
+    image: memcached:latest
+    ports:
+        - "11211:11211"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11211"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

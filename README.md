@@ -44,19 +44,26 @@ defaul this is set to `/var/run/deep-dashboard/`.
 
 # Running the dashboard
 
-The simplest way is to use the Docker container that is provided. You can build
-the container with:
+The simplest way is to use the Docker compose with the compose file that is
+provided.
 
-    make docker-build
+First of all, you would need to define a `docker/local.env` file, containing
+the aforementioned minimal configuration.
 
-Then you can run it with the following command (assuming that you have
-configured your dashboard in a file named `dashboard-config.conf`:
+Then you can build the containers needed, and start the Docker compose with:
 
-    CONFIG_FILE=dashboard-config.conf make docker-run
+    make docker-compose-build
+    make docker-compose-run
 
-Or, directly with Docker, pulling the Docker image from Docker Hub:
+If you wish to use a different environment file, you can do so, indicating it
+with the `COMPOSE_LOCAL_ENV` environment variable:
 
-    docker run -ti -p 80:80 -v /path/to/dashboard-config.conf:/etc/deep-dashboard/dashboard.conf indigodatacloud/deep-dashboard
+    COMPOSE_LOCAL_ENV=foo.env make (...)
+
+Or, directly with Docker compose:
+
+    docker-compose -f docker/docker-compose.yml build
+    docker-compose -f docker/docker-compose.yml --compatibility up --force-recreate
 
 # Acknowledgements
 

@@ -3,7 +3,10 @@ PROJECT = deep_dashboard
 
 ifdef CONFIG_FILE
 	OPTS += --config-file `realpath $(CONFIG_FILE)`
-    DOCKER_OPTS += -v `realpath $(CONFIG_FILE)`:/etc/deep-dashboard/dashboard.conf
+endif
+
+ifdef COMPOSE_LOCAL_ENV
+	COMPOSE_OPTS += --env-file `realpath $(COMPOSE_LOCAL_ENV)`
 endif
 
 ifndef VERBOSE
@@ -32,7 +35,7 @@ help:
 	@echo '   CONFIG_FILE: path for the configuration file to use (you must set   '
 	@echo '                one!!)                                                 '
 	@echo '   OPTS: additional options to be pased to the application             '
-	@echo '   DOCKEROPTS: additional options to be pased to the Docker runtime    '
+	@echo '   COMPOSE_LOCAL_ENV: local environment to pass to the Docker compose  '
 
 .PHONY: setup
 setup: $(VIRTUALENV) 
@@ -64,16 +67,16 @@ run: setup $(VIRTUALENV)
 	@echo 'D> Running DEEP Dashboard inside $(VIRTUALENV)'
 	. $(VIRTUALENV)/bin/activate; deep-dashboard --listen-ip 127.0.0.1 --listen-port 8080 $(OPTS)
 
-.PHONY: docker-rebuild
-docker-rebuild:
+.PHONY: docker-compose-rebuild
+docker-compose-rebuild:
 	@echo 'D> Building DEEP Dashboard container'
-	docker build --no-cache -t deep-dashboard docker/
+	docker-compose -f docker/docker-compose.yml $(COMPOSE_OPTS) build --no-cache
 
-.PHONY: docker-build
-docker-build:
+.PHONY: docker-compose-build
+docker-compose-build:
 	@echo 'D> Building DEEP Dashboard container'
-	docker build -t deep-dashboard docker/
+	docker-compose -f docker/docker-compose.yml $(COMPOSE_OPTS) build
 
-.PHONY: docker-run
-docker-run:
-	docker run -ti -p 8080:80 $(DOCKER_OPTS) deep-dashboard:latest
+.PHONY: docker-compose-run
+docker-compose-run:
+	docker-compose -f docker/docker-compose.yml --compatibility $(COMPOSE_OPTS) up --force-recreate
