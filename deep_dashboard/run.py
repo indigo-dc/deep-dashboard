@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
 import sys
 
 from aiohttp import web
@@ -40,8 +41,6 @@ INTRO = """
 
 
 def main():
-    #    _shutdown.handle_signals()
-
     print(INTRO)
 
     config.configure(sys.argv[1:])
@@ -50,12 +49,17 @@ def main():
 
     app = deep_dashboard.init(sys.argv[1:])
 
-    web.run_app(
-        app,
-        host=CONF.listen_ip,
-        port=CONF.listen_port,
-        path=CONF.listen_path
-    )
+    try:
+        web.run_app(
+            app,
+            handle_signals=True,
+            host=CONF.listen_ip,
+            port=CONF.listen_port,
+            path=CONF.listen_path
+        )
+    finally:
+        if CONF.listen_path:
+            os.remove(CONF.listen_path)
 
 
 if __name__ == "__main__":
