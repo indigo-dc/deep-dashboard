@@ -69,7 +69,7 @@ IAM User Info endpoint URL.
 """),
     cfg.URIOpt(
         'redirect-uri',
-        default="http://127.0.0.1:8080/login/iam",
+        default="https://127.0.0.1/login/iam",
         schemes=["http", "https"],
         help="""
 Redirection endpoint. Configure this with your public IP, as configured in
