@@ -93,7 +93,7 @@
 #use_eventlog = false
 
 # The amount of time before the log files are rotated. This option is ignored
-# unless log_rotation_type is setto "interval". (integer value)
+# unless log_rotation_type is set to "interval". (integer value)
 #log_rotate_interval = 1
 
 # Rotation interval type. The time of the last file change (or the time when
@@ -236,7 +236,7 @@
 # Redirection endpoint. Configure this with your public IP, as configured in
 # the IAM Client configuration.
 #  (uri value)
-#redirect_uri = http://127.0.0.1:8080/login/iam
+#redirect_uri = https://127.0.0.1/login/iam
 
 
 [orchestrator]
@@ -259,6 +259,11 @@
 # Directory relative to $tosca_dir where the DEEP TOSCA templates are stored.
 #  (string value)
 #deep_templates_dir = deep-oc
+
+#
+# Remove $tosca_dir in case it is not a valid Git repository.
+#  (boolean value)
+#purge_tosca_directory = false
 
 #
 # Path to the directory where the additional TOSCA parameters are stored.
