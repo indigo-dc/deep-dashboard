@@ -104,6 +104,57 @@ async def delete_deployment(request):
 
 
 # FIXME(aloga): this is not correct, we should not use a GET but a DELETE
+@routes.get("/deployments/{uuid}/history/{model}/{training_uuid}/delete",
+            name="training.delete")
+async def delete_training(request):
+    dep_uuid = request.match_info["uuid"]
+    model = request.match_info["model"]
+    training_uuid = request.match_info["training_uuid"]
+
+    cli = await orchestrator.get_client(
+        CONF.orchestrator.url,
+        request
+    )
+
+    try:
+        deployment = cli.deployments.show(dep_uuid)
+    except orpy.exceptions.ClientException as e:
+        flash.flash(
+            request,
+            ("danger", f'Error getting deployment {dep_uuid}: {e.message}')
+        )
+        return web.HTTPFound("/deployments")
+
+    # Check if deployment is still in 'create_in_progress'
+    if 'deepaas_endpoint' not in deployment.outputs:
+        flash.flash(
+            request,
+            ("warning",
+             'Wait until creation is completed before you access the '
+             'training history.')
+        )
+        return web.HTTPFound(f"/deployments/{dep_uuid}/history")
+
+    # Check if deployment has DEEPaaS V2
+    deepaas_url = deployment.outputs['deepaas_endpoint']
+    training_url = f"{deepaas_url}/v2/models/{model}/train/{training_uuid}"
+
+    session = aiohttp.ClientSession()
+
+    try:
+        async with session.delete(training_url,
+                                  raise_for_status=True) as r:
+            if r.status not in [200, 201]:
+                raise Exception
+    except Exception as e:
+        flash.flash(
+            request,
+            ("warning", f"Could not delete training!! (reason: {e.message})")
+        )
+    finally:
+        return web.HTTPFound(f"/deployments/{dep_uuid}/history")
+
+
 @routes.get("/deployments/{uuid}/history", name="deployments.history")
 @aiohttp_jinja2.template('deployments/summary.html')
 async def show_deployment_history(request):
@@ -140,7 +191,7 @@ async def show_deployment_history(request):
     try:
         async with session.get(deepaas_url,
                                raise_for_status=True) as r:
-            data = await r.text()
+            data = await r.json()
         versions = data['versions']
         if 'v2' not in [v['id'] for v in versions]:
             raise Exception
@@ -155,14 +206,12 @@ async def show_deployment_history(request):
 
     # Get info
     async with session.get(deepaas_url + '/v2/models',
-                           verify=False,
                            raise_for_status=False) as r:
         r = await r.json()
 
     training_info = {}
     for model in r['models']:
         async with session.get(f'{deepaas_url}/v2/models/{model["id"]}/train/',
-                               verify=False,
                                raise_for_status=False) as r:
             training_info[model['id']] = await r.json()
 

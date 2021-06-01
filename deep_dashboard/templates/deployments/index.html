@@ -28,7 +28,7 @@
     <tbody>
     {% for deployment in deployments %}
         <tr>
-            <th scope="row"><a href="#{#{ url_for('deployment_summary', uuid=deployment.uuid) }#}">{{deployment.uuid}}</a></th> 
+            <th scope="row"><a href="{{ url('deployments.history', uuid=deployment.uuid) }}">{{deployment.uuid}}</a></th>
             <td>
                 {% if "COMPLETE" in deployment.status %}
                 <span class="badge bg-success">{{ deployment.status }}</span>
@@ -45,7 +45,7 @@
             <td>{{deployment.creationTime}}</td>
             <td>{{deployment.cloudProviderName}}</td>
             <td>
-                <div class="btn-group" role?"group">
+                <div class="btn-group" role="group">
                     <!-- ACCESS -->
                     <div class="btn-group" role="group">
                         <button id="dropdownAccess" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {% if not deployment.outputs %}disabled{% endif %}>
