@@ -47,8 +47,12 @@ defaul this is set to `/var/run/deep-dashboard/`.
 The simplest way is to use the Docker compose with the compose file that is
 provided.
 
-First of all, you would need to define a `docker/local.env` file, containing
-the aforementioned minimal configuration.
+First of all, you would need to define a `docker/.env` file, containing
+the aforementioned minimal configuration. Validate the docker-compose file 
+with:
+
+    docker-compose -f docker/docker-compose.yml config
+
 
 Then you can build the containers needed, and start the Docker compose with:
 

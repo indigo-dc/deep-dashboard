@@ -6,7 +6,6 @@ services:
     build: 
       context: "."
       dockerfile: Dockerfile
-    env_file: ./local.env
     environment:
       OS_GITHUB_SECRET: ${GITHUB_SECRET:?err}
       OS_IAM__BASE_URL: ${IAM_BASE_URL:?err}
