@@ -19,9 +19,11 @@ import collections
 import json
 import os.path
 import pathlib
-import yaml
+import shutil
 
 import aiohttp
+import git
+import git.exc
 
 from deep_dashboard import config
 from deep_dashboard import log
@@ -34,49 +36,38 @@ LOG = log.getLogger("deep_dashboard.deep_oc")
 async def get_deep_oc_modules_metadata():
     """Get and load modules in the DEEP marketplace as TOSCA files."""
 
-    session = aiohttp.ClientSession()
-    async with session.get(CONF.deep_oc_modules,
-                           raise_for_status=True) as r:
-        content = await r.text()
+    LOG.debug(f"Loading DEEP OC from {CONF.deep_oc_repo}")
 
-    yml_list = yaml.safe_load(content)
-    if not yml_list:
-        msg = f'No modules found in {CONF.deep_oc_modules}'
-        LOG.error(msg)
-        # FIXME(aloga): use our own exceptions here
-        raise Exception(msg)
-    modules_list = [m['module'] for m in list(yml_list)]
+    deep_oc_dir = pathlib.Path(CONF.deep_oc_dir)
+
+    try:
+        repo = git.Repo(deep_oc_dir)
+    except git.exc.NoSuchPathError:
+        deep_oc_dir.mkdir(parents=True)
+        repo = git.Repo.clone_from(CONF.deep_oc_repo, deep_oc_dir)
+    except (git.exc.InvalidGitRepositoryError, git.exc.GitCommandError):
+        if CONF.purge_deep_oc_directory:
+            shutil.rmtree(deep_oc_dir)
+            deep_oc_dir.mkdir(parents=True)
+            repo = git.Repo.clone_from(CONF.deep_oc_repo, deep_oc_dir)
+        else:
+            raise
+
+    g = git.cmd.Git(deep_oc_dir)
+    g.pull()
+    repo.submodule_update(recursive=True)
 
     modules_meta = collections.OrderedDict()
-    for m_url in modules_list:
-        m_name = os.path.basename(m_url).lower().replace('_', '-')
 
-        if m_name in modules_meta:
-            msg = f'Two modules are sharing the same name: {m_name}'
-            LOG.error(msg)
-            # FIXME(aloga): use our own exceptions here
-            raise Exception(msg)
-
-        # Get module description from metadata.json
-        m_url = m_url.replace(
-            'https://github.com/',
-            'https://raw.githubusercontent.com/'
-        )
-        meta_url = f'{m_url}/master/metadata.json'
-        async with session.get(meta_url,
-                               headers={"accept": "application/json"},
-                               raise_for_status=True) as r:
-            # Unfortunately we cannot use r.json() here as GitHub does not
-            # send a proper content-type for the file, as it is being sent
-            # as plaintext
-            metadata = await r.read()
+    for sm in repo.submodules:
+        meta_file = deep_oc_dir / deep_oc_dir / sm.name / "metadata.json"
+        with open(meta_file, "r") as f:
+            metadata = f.read()
         metadata = json.loads(metadata)
+        metadata["module_url"] = sm.url
+        name = sm.name.lower().replace('_', '-')
 
-        metadata["module_url"] = m_url
-
-        modules_meta[m_name] = metadata
-
-    await session.close()
+        modules_meta[name] = metadata
 
     modules_meta["external"] = {
         'title': 'Run your own module',
@@ -103,8 +94,6 @@ async def get_dockerhub_tags(session, image):
 async def map_modules_to_tosca(modules_metadata, tosca_templates):
 
     session = aiohttp.ClientSession()
-
-    modules = collections.OrderedDict()
 
     tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
     common_toscas = CONF.orchestrator.common_toscas
@@ -149,29 +138,17 @@ async def map_modules_to_tosca(modules_metadata, tosca_templates):
             else:
                 metadata['docker_tags'] = dockerhub_tags
 
-        # Build the module dict
-        modules[module_name] = {
-            'toscas': toscas,
-            'url': metadata["module_url"],
-            'title': metadata['title'],
-            'sources': metadata['sources'],
-            'docker_tags': metadata['docker_tags'],
-            'description': metadata['summary'],
-            'keywords': metadata.get('keywords', []),
-            # FIXME(aloga): allow users to change this
-            'icon': "https://cdn4.iconfinder.com/data/icons/mosaicon-04/"
-                    "512/websettings-512.png",
-            'display_name': metadata['title'],
-        }
+        metadata["tosca_templates"] = toscas
+
     await session.close()
-    return modules
+    return modules_metadata
 
 
 async def load_deep_oc(app):
     tosca_templates = await tosca.load_tosca_templates()
     modules_meta = await get_deep_oc_modules_metadata()
-    modules = await map_modules_to_tosca(modules_meta, tosca_templates)
-    app.modules = modules
+    modules_meta = await map_modules_to_tosca(modules_meta, tosca_templates)
+    app.modules = modules_meta
     app.tosca_templates = tosca_templates
 
 

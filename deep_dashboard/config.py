@@ -30,11 +30,30 @@ GitHub secret to trigger reloading of modules
 """),
     cfg.URIOpt(
         'deep-oc-modules',
-        default=("https://raw.githubusercontent.com/deephdc/deep-oc/"
-                 "master/MODULES.yml"),
+        default=None,
+        schemes=["http", "https"],
+        deprecated_for_removal=True,
+        help="""
+URL of the DEEP OC modules YAML file. This option is marked for removal.
+"""),
+    cfg.URIOpt(
+        'deep-oc-repo',
+        default="https://github.com/deephdc/deep-oc/",
         schemes=["http", "https"],
         help="""
-URL of the DEEP OC modules YAML file.
+URL of the DEEP OC repository.
+"""),
+    cfg.StrOpt(
+        'deep-oc-dir',
+        default="$runtime_dir/deep-oc",
+        help="""
+Path to the directory where to store all the DEEP OC modules.
+"""),
+    cfg.BoolOpt(
+        "purge-deep-oc-directory",
+        default=False,
+        help="""
+Remove $deep_oc_dir in case it is not a valid Git repository.
 """),
     cfg.StrOpt(
         "runtime-dir",
