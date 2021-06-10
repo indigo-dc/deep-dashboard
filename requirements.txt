@@ -23,5 +23,6 @@ oslo.log>=1.8.0 # Apache-2.0
 
 pyyaml
 jinja2
+markdown
 
 orpy>=1.0.1

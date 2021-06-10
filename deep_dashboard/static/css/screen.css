@@ -14,6 +14,21 @@ main > .container {
     padding-bottom: 300px; 
 }
 
+a.custom-card,
+a.custom-card:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cards { 
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.cards:hover { 
+    box-shadow: 5px 6px 6px 2px #e9ecef; 
+    background: #eeeeee;
+}
 /* .footer { */
 /*     background-color: rgb(38, 39, 39) !important; */
 /*     color: #FFFFFF; */

@@ -37,6 +37,10 @@ async def home(request):
         del session["next"]
         return web.HTTPFound(next_url)
 
+    request.context["breadcrumbs"] = [
+        ("Home", True, "/"),
+    ]
+
     return request.context
 
 

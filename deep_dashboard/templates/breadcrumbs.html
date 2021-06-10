@@ -1,0 +1,13 @@
+<div class="row pt-2">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+        {% for bc, active, link in breadcrumbs %}
+            {% if active %}
+            <li class="breadcrumb-item active fw-light" aria-current="page">{{ bc }}</li>
+            {% else %}
+            <li class="breadcrumb-item fw-light"><a href="{{ link }}">{{ bc }}</a></li>
+            {% endif %}
+        {% endfor %}
+        </ol>
+    </nav>
+</div>

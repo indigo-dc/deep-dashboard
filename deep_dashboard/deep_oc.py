@@ -68,6 +68,8 @@ async def get_deep_oc_modules_metadata():
         name = sm.name.lower().replace('_', '-')
 
         modules_meta[name] = metadata
+        modules_meta[name]["original_name"] = sm.name
+        modules_meta[name]["deepaas_name"] = sm.name.replace("DEEP-OC-", "", 1)
 
     modules_meta["external"] = {
         'title': 'Run your own module',

@@ -45,6 +45,11 @@ async def get_deployments(request):
         request
     )
 
+    request.context["breadcrumbs"] = [
+        ("Home", False, "/"),
+        ("Deployments", True, "/deployments"),  # FIXME(aloga): use url
+    ]
+
     try:
         request.context["deployments"] = cli.deployments.list()
     except orpy.exceptions.ClientException as e:
@@ -62,6 +67,13 @@ async def get_deployment_template(request):
     request.context["deployments"] = []
 
     uuid = request.match_info['uuid']
+
+    request.context["breadcrumbs"] = [
+        ("Home", False, "/"),
+        ("Deployments", False, "/deployments"),  # FIXME(aloga): use url
+        (uuid, False, f"/deployments/{uuid}"),  # FIXME(aloga): use url
+        ("template", True, f"/deployments/{uuid}/template"),  # FIXME(aloga)
+    ]
 
     cli = await orchestrator.get_client(
         CONF.orchestrator.url,
@@ -159,6 +171,13 @@ async def delete_training(request):
 @aiohttp_jinja2.template('deployments/summary.html')
 async def show_deployment_history(request):
     uuid = request.match_info['uuid']
+
+    request.context["breadcrumbs"] = [
+        ("Home", False, "/"),
+        ("Deployments", False, "/deployments"),  # FIXME(aloga): use url
+        (uuid, False, f"/deployments/{uuid}"),  # FIXME(aloga): use url
+        ("history", True, f"/deployments/{uuid}/history"),  # FIXME(aloga)
+    ]
 
     cli = await orchestrator.get_client(
         CONF.orchestrator.url,

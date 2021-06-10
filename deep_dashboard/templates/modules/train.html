@@ -9,7 +9,7 @@
 {% block content %}
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h2>Module: {{ selected_module }}</h2>
+    <h2>Configure training: {% if module_meta['title'] is defined %}{{ module_meta['title'] }}{% else %}{{ modulename }}{% endif %}</h2>
 </div>
 
 {% include 'flashed_messages.html' %} 

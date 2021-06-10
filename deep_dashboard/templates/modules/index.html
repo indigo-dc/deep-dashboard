@@ -20,49 +20,39 @@
 
 <div class="row row-cols-1 row-cols-md-5 g-4 mb-5" id="cardsContainer">
 {% for modulename, module in templates.items() %}
-    <div class="col">
-        <div class="card h-100 mx-2 my-2">
-            <div class="card-header">
-                <span class="text-muted" style="font-size:0.9em;">
-                {% if "development" in module['keywords'] %}
+    <div class="col-md-6 col-lg-3">
+        <a href="{{ url('module', module=modulename) }}" class="custom-card">
+            <div class="card cards h-100 mx-2 my-2">
+                <div class="card-header">
+                    <span class="text-muted" style="font-size:0.9em;">
+                        {% if "development" in module['keywords'] %}
                         <i class="fas fa-tools fa-fw"></i>
                         Development
-                {% else %}
+                        {% else %}
                         <i class="fas fa-project-diagram fa-fw"></i>
                         Model
-                {% endif %}
-                {% for key in module['keywords'] %}
-                    {% if key == "inference" %}
+                        {% endif %}
+                        {% for key in module['keywords'] %}
+                        {% if key == "inference" %}
                         | Inference
-                    {% endif %}
-                    {% if key == "trainable" %}
+                        {% endif %}
+                        {% if key == "trainable" %}
                         | Trainable
-                    {% endif %}
-                    {% if kety == "pre-trained" %}
+                        {% endif %}
+                        {% if kety == "pre-trained" %}
                         | Pre-trained
-                    {% endif %}
-                {% endfor %}
-                </span>
+                        {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if module['title'] is defined %}{{ module['title'] }}{% else %}{{ modulename }}{% endif %}
+                    </h5>
+                    <p class="card-text text-muted">{{ module['summary'] }}</p>
+                </div>
             </div>
-            <div class="card-body">
-                <h5 class="card-title">{% if module['display_name'] is defined %}{{ module['display_name'] }}{% else %}{{ modulename }}{% endif %}</h5>
-                <p class="card-text text-muted">{{ module['description'] }}</p>
-
-            </div>
-            <div class="card-footer text-center">
-            <div class="btn-group btn-group-sm mx-auto mt-0">
-                <a class="btn btn-outline-dark rounded mx-1 my-0 p-2" href="{{ url('module.train', module=modulename) }}">
-
-                Train module
-                </a>
-                {% if modulename != 'external' %}
-                  <a class="btn btn-outline-info rounded mx-1 my-0 p-2" target="_blank" href="https://marketplace.deep-hybrid-datacloud.eu/modules/{{ modulename }}.html">
-                  Marketplace
-                  </a>
-                {% endif %}
-            </div>
-            </div>
-        </div>
+        </a>
     </div>
 {% endfor %}
 </div>

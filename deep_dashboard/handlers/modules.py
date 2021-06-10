@@ -21,6 +21,7 @@ import hmac
 from aiohttp import web
 import aiohttp_jinja2
 import aiohttp_session_flash as flash
+import markdown
 
 from deep_dashboard import config
 from deep_dashboard import deep_oc
@@ -36,6 +37,10 @@ routes = web.RouteTableDef()
 @aiohttp_jinja2.template('modules/index.html')
 async def index(request):
     request.context["templates"] = request.app.modules
+    request.context["breadcrumbs"] = [
+        ("Home", False, "/"),
+        ("Modules", True, "/modules"),  # FIXME(aloga): use url
+    ]
     return request.context
 
 
@@ -98,9 +103,11 @@ async def configure_module_training(request):
     request.context["selected_module"] = module
     module_meta = request.app.modules.get(module)
 
-    selected_tosca = request.query.get("selected_tosca",
-                                       list(module_meta["toscas"].keys())[0])
-    template_name = module_meta["toscas"][selected_tosca]
+    selected_tosca = request.query.get(
+        "selected_tosca",
+        list(module_meta["tosca_templates"].keys())[0]
+    )
+    template_name = module_meta["tosca_templates"][selected_tosca]
     hardware_configuration = request.query.get("hardware_configuration",
                                                "CPU").lower()
     docker_tag = request.query.get("docker_tag",
@@ -110,7 +117,7 @@ async def configure_module_training(request):
 
     general_configuration = {
         "tosca_templates": {
-            "available": module_meta["toscas"].keys(),
+            "available": module_meta["tosca_templates"].keys(),
             "selected": selected_tosca,
         },
         "docker_tags": {
@@ -127,7 +134,7 @@ async def configure_module_training(request):
         },
     }
 
-    tosca_template = module_meta["toscas"].get(selected_tosca)
+    tosca_template = module_meta["tosca_templates"].get(selected_tosca)
     if tosca_template is None:
         flash.flash(
             request,
@@ -214,5 +221,41 @@ async def configure_module_training(request):
     request.context["template_meta"] = template_meta
     request.context["template_name"] = template_name
     request.context["slas"] = request.app.slas
+    request.context["module_meta"] = module_meta
+    request.context["breadcrumbs"] = [
+        ("Home", False, "/"),
+        ("Modules", False, "/modules"),  # FIXME(aloga): use url
+        (module, False, f"/modules/{module}"),  # FIXME(aloga): use url
+        ("train", True, f"/modules/{module}/train"),  # FIXME(aloga): use url
+    ]
+
+    return request.context
+
+
+@routes.get("/modules/{module}", name="module")
+@aiohttp_jinja2.template('modules/module.html')
+async def module_info(request):
+    module = request.match_info["module"].lower()
+
+    if module not in request.app.modules:
+        flash.flash(
+            request,
+            ("danger", f"Module does not exist: {module}.")
+        )
+        return web.HTTPFound("/modules")
+
+    module_meta = request.app.modules.get(module)
+
+    request.context["modulename"] = module
+    request.context["module_meta"] = copy.deepcopy(module_meta)
+    description = "\n".join(request.context["module_meta"]["description"])
+    description = markdown.markdown(description)
+    request.context["module_meta"]["description"] = description
+
+    request.context["breadcrumbs"] = [
+        ("Home", False, "/"),
+        ("Modules", False, "/modules"),  # FIXME(aloga): use url
+        (module, True, f"/modules/{module}"),  # FIXME(aloga): use url
+    ]
 
     return request.context

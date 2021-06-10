@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% set active_page = "modules" %}
+
+{% block subtitle %}
+- {% if module_meta['title'] is defined %}{{ module_meta['title'] }}{% else %}{{ modulename }}{% endif %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="row border-bottom">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 ">
+        <h2>Module: {% if module_meta['title'] is defined %}{{ module_meta['title'] }}{% else %}{{ modulename }}{% endif %}</h2>
+    </div>
+    <div class="row">
+        <p>
+        <span class="fas fa-folder text-muted"></span>
+        <span class="text-muted">
+        {% if "tools" in module_meta["keyworks"] %}
+            Tool
+        {% else %}
+            Model
+            {% endif %} | </span>
+        {{ module_meta["summary"] }}</p>
+    </div>
+</div>
+
+{% include 'flashed_messages.html' %}
+
+
+<div class="row g-5 pt-3">
+    <div class="col">
+    {{ module_meta["description"] | safe }}
+    </div>
+    <div class="col-lg-3">
+        <div class="row pt-3 pb-3">
+            <div class="btn-group-vertical">
+                <a class="btn btn-info mx-1 my-0 p-2" href="{{ url('module.train', module=modulename) }}">
+                    Train module
+                </a>
+                {% if "pre-trained" in module_meta["keywords"] %}
+                    <a class="btn btn-outline-info mx-1 my-0 p-2" target="_blank" href="https://deepaas.deep-hybrid-datacloud.eu/api/v1/web/deepaas/deep-oc/{{ module_meta["deepaas_name"] }}/">
+                    API
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="accordion" id="accordion_metadata">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingLicense">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLicense" aria-expanded="true" aria-controls="collapseLicense">
+                        License
+                    </button>
+                </h2>
+                <div id="collapseLicense" class="accordion-collapse collapse show" aria-labelledby="headingLicense" data-bs-parent="#accordion_metadata">
+                    <div class="accordion-body">
+                        {{ module_meta["license"] }}
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingCategories">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCategories" aria-expanded="true" aria-controls="collapseCategories">
+                        Categories
+                    </button>
+                </h2>
+                <div id="collapseCategories" class="accordion-collapse collapse show" aria-labelledby="headingCategories" data-bs-parent="#accordion_metadata">
+                    <div class="accordion-body">
+                        {% for key in module_meta["keywords"] %}
+                        <span class="badge bg-primary">{{ key }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingResources">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResources" aria-expanded="true" aria-controls="collapseResources">
+                        Additional Resources
+                    </button>
+                </h2>
+                <div id="collapseResources" class="accordion-collapse collapse show" aria-labelledby="headingResources" data-bs-parent="#accordion_metadata">
+                    <div class="accordion-body">
+                        <dl>
+                            <dt>Marketplace:</dt>
+                            <dd><a target="_blank" href="https://marketplace.deep-hybrid-datacloud.eu/modules/{{ modulename }}.html">{{ modulename }}</a>
+                            </dd>
+
+                            <dt>Sources:</dt>
+                            <dd>
+                              <ul>
+                                <li><a target="_blank" href="{{ module_meta["sources"]["code"] }}">Code</a> <br /></li>
+                                 <li><a target="_blank" href="{{ module_meta["sources"]["dockerfile_repo"]}}">DEEP OC repository</a></li>
+                                {% if module_meta["sources"]["pre_trained_weights"] %}
+                                <li><a target="_blank" href="{{ module_meta["sources"]["pre_trained_weights"] }}">Pre trainted weights</a></li>
+                                {% endif %}
+
+                                {% if module_meta["sources"]["code"] %}
+                                <li><a target="_blank" href="{{ module_meta["sources"]["code"] }}">Code</a></li>
+                                {% endif %}
+
+                                {% if module_meta["dataset_url"] %}
+                                <li><a target="_blank" href="{{ module_meta["dataset_url"] }}">Dataset</a></li>
+                                {% endif %}
+                                {% if module_meta["cite_url"] %}
+                                <li><a target="_blank" href="{{ module_meta["cite_url"] }}">Get citation.</a></li>
+                                {% endif %}
+                              </ul>
+                            </dd>
+
+                            <dt>Docker:</dt>
+                            <dd>
+                              <ul>
+                                  <li>Docker registry: <a target="_blank" href="https://hub.docker.com/r/deephdc/{{ module_meta["sources"]["docker_registry_repo"]}}">{{ module_meta["sources"]["docker_registry_repo"]}}</a></li>
+                                  <li><a target="_blank" href="{{ module_meta["sources"]["dockerfile_repo"]}}">Dockerfile repository</a></li>
+                              </ul>
+                            </dd>
+
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
