@@ -33,10 +33,10 @@ CONF = config.CONF
 LOG = log.getLogger("deep_dashboard.deep_oc")
 
 
-async def get_deep_oc_modules_metadata():
+def download_deep_catalog():
     """Get and load modules in the DEEP marketplace as TOSCA files."""
 
-    LOG.debug(f"Loading DEEP OC from {CONF.deep_oc_repo}")
+    LOG.debug(f"Downloading DEEP OC from {CONF.deep_oc_repo}")
 
     deep_oc_dir = pathlib.Path(CONF.deep_oc_dir)
 
@@ -57,7 +57,13 @@ async def get_deep_oc_modules_metadata():
     g.pull()
     repo.submodule_update(recursive=True)
 
+
+async def get_deep_oc_modules_metadata():
     modules_meta = collections.OrderedDict()
+
+    LOG.debug(f"Loading DEEP OC from {CONF.deep_oc_repo}")
+    deep_oc_dir = pathlib.Path(CONF.deep_oc_dir)
+    repo = git.Repo(deep_oc_dir)
 
     for sm in repo.submodules:
         meta_file = deep_oc_dir / deep_oc_dir / sm.name / "metadata.json"
@@ -146,13 +152,29 @@ async def map_modules_to_tosca(modules_metadata, tosca_templates):
     return modules_metadata
 
 
-async def load_deep_oc(app):
-    tosca_templates = await tosca.load_tosca_templates()
-    modules_meta = await get_deep_oc_modules_metadata()
+async def download_catalog(app):
+    loop = asyncio.get_event_loop()
+    app.tosca_downloader = loop.run_in_executor(app.pool,
+                                                tosca.download_tosca_templates)
+    app.catalog_downloader = loop.run_in_executor(app.pool,
+                                                  download_deep_catalog)
+
+
+async def load_catalog(app):
+    await app.scheduler.spawn(_load_catalog(app))
+
+
+async def _load_catalog(app):
+    while True:
+        if not (app.tosca_downloader.done() and app.catalog_downloader.done()):
+            await asyncio.sleep(5)
+        else:
+            break
+
+    tosca_templates, modules_meta = await asyncio.gather(
+        asyncio.create_task(tosca.load_tosca_templates()),
+        asyncio.create_task(get_deep_oc_modules_metadata())
+    )
     modules_meta = await map_modules_to_tosca(modules_meta, tosca_templates)
     app.modules = modules_meta
     app.tosca_templates = tosca_templates
-
-
-async def load_deep_oc_as_task(app):
-    return asyncio.create_task(load_deep_oc(app))

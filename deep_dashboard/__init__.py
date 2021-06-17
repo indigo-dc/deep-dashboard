@@ -16,6 +16,7 @@
 
 import asyncio
 import base64
+import concurrent.futures
 import pathlib
 
 from aiohttp import web
@@ -25,6 +26,7 @@ import aiohttp_session
 import aiohttp_session.cookie_storage
 import aiohttp_session.memcached_storage
 import aiohttp_session_flash
+import aiojobs
 import aiomcache
 from cryptography import fernet
 import jinja2
@@ -131,6 +133,9 @@ async def init(args):
     app.middlewares.append(error_middleware)
     app.modules = {}
 
-    app.on_startup.append(deep_oc.load_deep_oc_as_task)
+    app.scheduler = await aiojobs.create_scheduler()
+    app.pool = concurrent.futures.ThreadPoolExecutor()
+    app.on_startup.append(deep_oc.download_catalog)
+    app.on_startup.append(deep_oc.load_catalog)
 
     return app

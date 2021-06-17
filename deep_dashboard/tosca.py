@@ -43,10 +43,10 @@ tosca_info_defaults = {
 
 
 @lockutils.synchronized("tosca-templates.lock", external=True)
-async def load_tosca_templates():
+def download_tosca_templates():
     """Load DEEP-OC related TOSCA templates from configured repository."""
 
-    LOG.debug("Loading TOSCA templates")
+    LOG.debug("Downloading TOSCA templates")
 
     tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
 
@@ -65,6 +65,13 @@ async def load_tosca_templates():
 
     g = git.cmd.Git(tosca_dir)
     g.pull()
+
+
+@lockutils.synchronized("tosca-templates.lock", external=True)
+async def load_tosca_templates():
+    LOG.debug("Loading TOSCA templates")
+
+    tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
 
     toscas = {}
     deep_tpl_dir = tosca_dir / CONF.orchestrator.deep_templates_dir
