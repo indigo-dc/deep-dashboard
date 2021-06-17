@@ -58,7 +58,7 @@ def download_deep_catalog():
     repo.submodule_update(recursive=True)
 
 
-async def get_deep_oc_modules_metadata():
+async def load_modules_metadata():
     modules_meta = collections.OrderedDict()
 
     LOG.debug(f"Loading DEEP OC from {CONF.deep_oc_repo}")
@@ -173,7 +173,7 @@ async def _load_catalog(app):
 
     tosca_templates, modules_meta = await asyncio.gather(
         asyncio.create_task(tosca.load_tosca_templates()),
-        asyncio.create_task(get_deep_oc_modules_metadata())
+        asyncio.create_task(load_modules_metadata())
     )
     modules_meta = await map_modules_to_tosca(modules_meta, tosca_templates)
     app.modules = modules_meta
