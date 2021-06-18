@@ -107,7 +107,7 @@ async def init(args):
                               loop=loop)
         sess_storage = aiohttp_session.memcached_storage.MemcachedStorage(
             mc,
-            cookie_name='DEEPDASHBOARD'
+            cookie_name='DEEPDASHBOARD_M'
         )
     else:
         LOG.warning("Not using memcached, unexpected behaviour when running "
@@ -120,7 +120,7 @@ async def init(args):
 
         sess_storage = aiohttp_session.cookie_storage.EncryptedCookieStorage(
             secret_key,
-            cookie_name='DEEPDASHBOARD'
+            cookie_name='DEEPDASHBOARD_E'
         )
     aiohttp_session.setup(app, sess_storage)
 
