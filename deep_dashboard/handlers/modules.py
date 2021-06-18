@@ -248,7 +248,12 @@ async def module_info(request):
 
     request.context["modulename"] = module
     request.context["module_meta"] = copy.deepcopy(module_meta)
-    description = "\n".join(request.context["module_meta"]["description"])
+    description = module_meta.get("description")
+    if description:
+        description = "\n".join(description)
+    else:
+        description = "No description provided."
+
     description = markdown.markdown(description)
     request.context["module_meta"]["description"] = description
 

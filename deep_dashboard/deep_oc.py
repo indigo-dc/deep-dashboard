@@ -82,6 +82,7 @@ async def load_modules_metadata():
         'summary': 'Use your own external container hosted '
                    'in Dockerhub',
         'tosca': [],
+        'keywords': [],
         'docker_tags': ['latest'],
         'sources': {
             'docker_registry_repo': ''
