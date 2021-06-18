@@ -24,6 +24,7 @@ import shutil
 import aiohttp
 import git
 import git.exc
+from oslo_concurrency import lockutils
 
 from deep_dashboard import config
 from deep_dashboard import log
@@ -33,6 +34,7 @@ CONF = config.CONF
 LOG = log.getLogger("deep_dashboard.deep_oc")
 
 
+@lockutils.synchronized("catalog.lock", external=True)
 def download_deep_catalog():
     """Get and load modules in the DEEP marketplace as TOSCA files."""
 
@@ -58,6 +60,7 @@ def download_deep_catalog():
     repo.submodule_update(recursive=True)
 
 
+@lockutils.synchronized("catalog.lock", external=True)
 async def load_modules_metadata():
     modules_meta = collections.OrderedDict()
 
@@ -100,6 +103,8 @@ async def get_dockerhub_tags(session, image):
     return [i['name'] for i in aux]
 
 
+@lockutils.synchronized("tosca-templates.lock", external=True)
+@lockutils.synchronized("catalog.lock", external=True)
 async def map_modules_to_tosca(modules_metadata, tosca_templates):
 
     session = aiohttp.ClientSession()
