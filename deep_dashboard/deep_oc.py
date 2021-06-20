@@ -38,6 +38,10 @@ LOG = log.getLogger("deep_dashboard.deep_oc")
 def download_deep_catalog():
     """Get and load modules in the DEEP marketplace as TOSCA files."""
 
+    # FIXME(aloga): when using multiple backends this funcion is executed in
+    # all of them on startup. This does not cause errors (it will try to
+    # update git git repo, but this will delay startup time. We need to use
+    # fasteners to get the lock and return if the repo is already locked.
     LOG.debug(f"Downloading DEEP OC from {CONF.deep_oc_repo}")
 
     deep_oc_dir = pathlib.Path(CONF.deep_oc_dir)
@@ -106,7 +110,6 @@ async def get_dockerhub_tags(session, image):
 @lockutils.synchronized("tosca-templates.lock", external=True)
 @lockutils.synchronized("catalog.lock", external=True)
 async def map_modules_to_tosca(modules_metadata, tosca_templates):
-
     session = aiohttp.ClientSession()
 
     tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
@@ -128,8 +131,8 @@ async def map_modules_to_tosca(modules_metadata, tosca_templates):
                             f.write(await r.data())
                 toscas[t['title'].lower()] = tosca_name
             except Exception as e:
-                LOG.warning(f'Error processing TOSCA in module {module_name} '
-                            f'from {t["url"]}: {e}')
+                LOG.warning(f'Error processing TOSCA in module '
+                            f'{module_name} from {t["url"]}: {e}')
 
         # Add always common TOSCAs
         for k, v in common_toscas.items():
@@ -143,8 +146,8 @@ async def map_modules_to_tosca(modules_metadata, tosca_templates):
             )
             metadata.setdefault('docker_tags', [])
             if metadata['docker_tags']:
-                # Check that the tags provided by the user are indeed present
-                # in DockerHub
+                # Check that the tags provided by the user are indeed
+                # present in DockerHub
                 aux = set(metadata['docker_tags'])
                 aux = aux.intersection(set(dockerhub_tags))
                 aux = sorted(list(aux))
@@ -171,16 +174,22 @@ async def load_catalog(app):
 
 
 async def _load_catalog(app):
-    while True:
-        if not (app.tosca_downloader.done() and app.catalog_downloader.done()):
-            await asyncio.sleep(5)
-        else:
-            break
+    async def inner():
+        while True:
+            if not all([app.tosca_downloader.done(),
+                        app.catalog_downloader.done()]):
+                await asyncio.sleep(5)
+            else:
+                break
 
-    tosca_templates, modules_meta = await asyncio.gather(
-        asyncio.create_task(tosca.load_tosca_templates()),
-        asyncio.create_task(load_modules_metadata())
-    )
-    modules_meta = await map_modules_to_tosca(modules_meta, tosca_templates)
-    app.modules = modules_meta
-    app.tosca_templates = tosca_templates
+        tosca_templates, modules_meta = await asyncio.gather(
+            asyncio.create_task(tosca.load_tosca_templates()),
+            asyncio.create_task(load_modules_metadata())
+        )
+        modules_meta = await map_modules_to_tosca(modules_meta,
+                                                  tosca_templates)
+        app.modules = modules_meta
+        app.tosca_templates = tosca_templates
+        await app.cache.modules.set_values(modules_meta)
+        await app.cache.tosca_templates.set_values(tosca_templates)
+    await inner()

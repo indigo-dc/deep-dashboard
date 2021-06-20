@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
 import pathlib
 import shutil
 import yaml
@@ -45,6 +46,11 @@ tosca_info_defaults = {
 @lockutils.synchronized("tosca-templates.lock", external=True)
 def download_tosca_templates():
     """Load DEEP-OC related TOSCA templates from configured repository."""
+
+    # FIXME(aloga): when using multiple backends this funcion is executed in
+    # all of them on startup. This does not cause errors (it will try to
+    # update git git repo, but this will delay startup time. We need to use
+    # fasteners to get the lock and return if the repo is already locked.
 
     LOG.debug("Downloading TOSCA templates")
 
@@ -82,11 +88,12 @@ async def load_tosca_templates():
         if not tpl:
             continue
 
-        tosca_info = tosca_info_defaults.copy()
+        tosca_info = copy.deepcopy(tosca_info_defaults)
         if 'topology_template' not in tpl:
             continue
 
         tosca_info["valid"] = True
+        tosca_info["original tosca"] = copy.deepcopy(tpl)
 
         # Update meta with sub dict
         meta = tpl.pop("metadata", {})
@@ -107,10 +114,10 @@ async def load_tosca_templates():
 
         # Add parameters code here
         if CONF.orchestrator.tosca_parameters_dir:
-            params_dir = pathlib.Path(CONF.orchestrator.tosca_parameters_dir)
+            prm_dir = pathlib.Path(CONF.orchestrator.tosca_parameters_dir)
             tosca_name = tosca_file.stem
 
-            for f in params_dir.glob(f"{tosca_name}.parameters.y*ml"):
+            for f in prm_dir.glob(f"{tosca_name}.parameters.y*ml"):
                 with open(f) as f:
                     params = yaml.full_load(f)
                 if not params:

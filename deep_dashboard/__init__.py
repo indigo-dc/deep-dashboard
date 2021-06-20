@@ -16,9 +16,11 @@
 
 import asyncio
 import base64
+import collections
 import concurrent.futures
 import pathlib
 
+import aiocache
 from aiohttp import web
 import aiohttp_jinja2
 import aiohttp_security
@@ -75,6 +77,36 @@ async def meta_middleware(request, handler):
     return response
 
 
+class CacheManager:
+    def __init__(self, cache, namespace):
+        self.cache = cache
+        self.namespace = namespace
+
+    async def set_values(self, values):
+        if isinstance(values, dict):
+            values = values.items()
+        await self.cache.multi_set(values, namespace=self.namespace)
+        await self.cache.set("__all__", [i[0] for i in values],
+                             namespace=self.namespace)
+
+    async def get(self, key):
+        return await self.cache.get(key, namespace=self.namespace)
+
+    async def get_all_keys(self):
+        result = await self.cache.get("__all__", namespace=self.namespace)
+        return result or []
+
+    async def get_all(self):
+        keys = await self.cache.get("__all__", namespace=self.namespace)
+        if not keys:
+            return {}
+        values = await self.cache.multi_get(keys, namespace=self.namespace)
+        return dict(zip(keys, values))
+
+    async def exists(self, key):
+        return await self.cache.exists(key, namespace=self.namespace)
+
+
 async def init(args):
     LOG.info("Starting DEEP Dashboard...")
 
@@ -109,6 +141,11 @@ async def init(args):
             mc,
             cookie_name='DEEPDASHBOARD_M'
         )
+        aiocache.caches.add('default', {
+            'cache': "aiocache.MemcachedCache",
+            'endpoint': CONF.cache.memcached_ip,
+            'port': CONF.cache.memcached_port,
+        })
     else:
         LOG.warning("Not using memcached, unexpected behaviour when running "
                     "more than one worker!")
@@ -122,6 +159,10 @@ async def init(args):
             secret_key,
             cookie_name='DEEPDASHBOARD_E'
         )
+        aiocache.caches.add('default', {
+            'cache': "aiocache.SimpleMemoryCache",
+        })
+
     aiohttp_session.setup(app, sess_storage)
 
     policy = aiohttp_security.SessionIdentityPolicy()
@@ -132,6 +173,13 @@ async def init(args):
     app.middlewares.append(auth.auth_middleware)
     app.middlewares.append(error_middleware)
     app.modules = {}
+    cache = aiocache.caches.get("default")
+    app.cache = collections.namedtuple(
+        "Cache",
+        ["modules", "tosca_templates"],
+        defaults=[CacheManager(cache, "modules"),
+                  CacheManager(cache, "tosca")]
+    )()
 
     app.scheduler = await aiojobs.create_scheduler()
     app.pool = concurrent.futures.ThreadPoolExecutor()

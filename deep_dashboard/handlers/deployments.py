@@ -14,8 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import pathlib
-
 import aiohttp
 from aiohttp import web
 import aiohttp_jinja2
@@ -244,13 +242,18 @@ async def create_module_training(request):
     form_data = await request.post()
     LOG.debug(f"Received form data: {form_data}")
 
-    template_name = form_data.get('template')
-    LOG.debug(f"Selected template file: {template_name}")
+    tosca_template = form_data.get('template')
+    LOG.debug(f"Selected template file: {tosca_template}")
 
-    tosca_dir = pathlib.Path(CONF.orchestrator.tosca_dir)
-    tosca_dir = tosca_dir / CONF.orchestrator.deep_templates_dir
-    with open(tosca_dir / template_name, "r") as f:
-        template = yaml.full_load(f)
+    if not await request.app.cache.tosca_templates.exists(tosca_template):
+        flash.flash(
+            request,
+            ("danger", f"TOSCA template does not exist: {tosca_template}.")
+        )
+        return web.HTTPFound("/modules")
+
+    aux = await request.app.cache.tosca_templates.get(tosca_template)
+    template = aux["original tosca"]
 
     params = {}
     if 'extra_opts.keepLastAttempt' in form_data:

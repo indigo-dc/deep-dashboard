@@ -36,7 +36,7 @@ routes = web.RouteTableDef()
 @routes.get('/modules', name="modules")
 @aiohttp_jinja2.template('modules/index.html')
 async def index(request):
-    request.context["templates"] = request.app.modules
+    request.context["templates"] = await request.app.cache.modules.get_all()
     request.context["breadcrumbs"] = [
         ("Home", False, "/"),
         ("Modules", True, "/modules"),  # FIXME(aloga): use url
@@ -93,7 +93,7 @@ async def reload_all_modules(request):
 async def configure_module_training(request):
     module = request.match_info["module"].lower()
 
-    if module not in request.app.modules:
+    if not await request.app.cache.modules.exists(module):
         flash.flash(
             request,
             ("danger", f"Module does not exist: {module}.")
@@ -101,7 +101,7 @@ async def configure_module_training(request):
         return web.HTTPFound("/modules")
 
     request.context["selected_module"] = module
-    module_meta = request.app.modules.get(module)
+    module_meta = await request.app.cache.modules.get(module)
 
     selected_tosca = request.query.get(
         "selected_tosca",
@@ -142,14 +142,15 @@ async def configure_module_training(request):
         )
         return web.HTTPFound("/modules")
 
+    aux = await request.app.cache.tosca_templates.get(tosca_template)
     inputs = copy.deepcopy(
-        request.app.tosca_templates[tosca_template]["inputs"]
+        aux["inputs"]
     )
     inputs['docker_image'].setdefault(
         'default',
-        request.app.modules[module]['sources']['docker_registry_repo'])
+        module_meta['sources']['docker_registry_repo'])
 
-    docker_tags = request.app.modules[module]['docker_tags']
+    docker_tags = module_meta['docker_tags']
     if docker_tag not in docker_tags:
         docker_tag = docker_tags[0]
 
@@ -237,14 +238,14 @@ async def configure_module_training(request):
 async def module_info(request):
     module = request.match_info["module"].lower()
 
-    if module not in request.app.modules:
+    if not await request.app.cache.modules.exists(module):
         flash.flash(
             request,
             ("danger", f"Module does not exist: {module}.")
         )
         return web.HTTPFound("/modules")
 
-    module_meta = request.app.modules.get(module)
+    module_meta = await request.app.cache.modules.get(module)
 
     request.context["modulename"] = module
     request.context["module_meta"] = copy.deepcopy(module_meta)

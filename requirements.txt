@@ -7,6 +7,7 @@ aiohttp[speedups]>=3.6.2
 aiohttp_jinja2
 aiohttp_session[secure]
 aiohttp_session[aiomcache]
+aiocache[memcached]
 aiojobs
 aiomcache
 aiohttp_security
