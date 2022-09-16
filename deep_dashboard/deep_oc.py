@@ -113,7 +113,7 @@ async def load_modules_metadata():
 
 
 async def get_dockerhub_tags(session, image):
-    url = f'https://registry.hub.docker.com/v1/repositories/{image}/tags'
+    url = f'https://registry.hub.docker.com/v2/repositories/{image}/tags'
     async with session.get(url, raise_for_status=True) as r:
         aux = await r.json()
     return [i['name'] for i in aux]
