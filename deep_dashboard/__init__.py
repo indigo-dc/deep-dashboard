@@ -135,8 +135,7 @@ async def init(args):
     if CONF.cache.memcached_ip:
         loop = asyncio.get_event_loop()
         mc = aiomcache.Client(CONF.cache.memcached_ip,
-                              CONF.cache.memcached_port,
-                              loop=loop)
+                              CONF.cache.memcached_port)
         sess_storage = aiohttp_session.memcached_storage.MemcachedStorage(
             mc,
             cookie_name='DEEPDASHBOARD_M'
