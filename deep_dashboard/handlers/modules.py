@@ -83,7 +83,8 @@ async def reload_all_modules(request):
             )
 
     LOG.info('Reloading modules and TOSCA templates ...')
-    await deep_oc.load_deep_oc_as_task(request.app)
+    await deep_oc.download_catalog(request.app)
+    await deep_oc.load_catalog(request.app)
 
     return web.Response(status=201)
 
