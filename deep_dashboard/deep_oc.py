@@ -20,6 +20,7 @@ import json
 import os.path
 import pathlib
 import shutil
+import subprocess
 
 import aiohttp
 import git
@@ -50,18 +51,23 @@ def download_deep_catalog():
         repo = git.Repo(deep_oc_dir)
     except git.exc.NoSuchPathError:
         deep_oc_dir.mkdir(parents=True)
-        repo = git.Repo.clone_from(CONF.deep_oc_repo, deep_oc_dir)
+        git.Repo.clone_from(CONF.deep_oc_repo, deep_oc_dir)
     except (git.exc.InvalidGitRepositoryError, git.exc.GitCommandError):
         if CONF.purge_deep_oc_directory:
             shutil.rmtree(deep_oc_dir)
             deep_oc_dir.mkdir(parents=True)
-            repo = git.Repo.clone_from(CONF.deep_oc_repo, deep_oc_dir)
+            git.Repo.clone_from(CONF.deep_oc_repo, deep_oc_dir)
         else:
             raise
 
     g = git.cmd.Git(deep_oc_dir)
     g.pull()
-    repo.submodule_update(recursive=True)
+    # NOTE(aloga): we cannot rely on gitpython to update the submodules, as
+    # it fails to update them if the branch is other than main
+    subprocess.run(["git", "submodule", "init"],
+                   cwd = deep_oc_dir)
+    subprocess.run(["git", "submodule", "update", "--recursive"],
+                   cwd = deep_oc_dir)
 
 
 @lockutils.synchronized("catalog.lock", external=True)
