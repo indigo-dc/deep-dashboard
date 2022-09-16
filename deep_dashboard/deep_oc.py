@@ -80,9 +80,15 @@ async def load_modules_metadata():
 
     for sm in repo.submodules:
         meta_file = deep_oc_dir / deep_oc_dir / sm.name / "metadata.json"
-        with open(meta_file, "r") as f:
-            metadata = f.read()
-        metadata = json.loads(metadata)
+        try:
+            with open(meta_file, "r") as f:
+                metadata = f.read()
+            metadata = json.loads(metadata)
+        except FileNotFoundError:
+            LOG.error(f"Cannot find metadata file {meta_file}")
+        except json.JSONDecodeError:
+            LOG.error(f"Cannot decode JSON file {meta_file}")
+            continue
         metadata["module_url"] = sm.url
         name = sm.name.lower().replace('_', '-')
 
