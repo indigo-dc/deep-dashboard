@@ -48,7 +48,7 @@ def download_deep_catalog():
     deep_oc_dir = pathlib.Path(CONF.deep_oc_dir)
 
     try:
-        repo = git.Repo(deep_oc_dir)
+        git.Repo(deep_oc_dir)
     except git.exc.NoSuchPathError:
         deep_oc_dir.mkdir(parents=True)
         git.Repo.clone_from(CONF.deep_oc_repo, deep_oc_dir)
@@ -65,9 +65,9 @@ def download_deep_catalog():
     # NOTE(aloga): we cannot rely on gitpython to update the submodules, as
     # it fails to update them if the branch is other than main
     subprocess.run(["git", "submodule", "init"],
-                   cwd = deep_oc_dir)
+                   cwd=deep_oc_dir)
     subprocess.run(["git", "submodule", "update", "--recursive"],
-                   cwd = deep_oc_dir)
+                   cwd=deep_oc_dir)
 
 
 @lockutils.synchronized("catalog.lock", external=True)
