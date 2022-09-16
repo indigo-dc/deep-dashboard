@@ -24,7 +24,7 @@ RUN apt-get update \
     && rm /tmp/su-exec.c \
     && apt-get purge -y --auto-remove $fetch_deps
 
-RUN pip3 install "deep-dashboard>=0.8.0"
+RUN pip3 install "deep-dashboard>=0.8.1"
 
 RUN mkdir /etc/deep-dashboard/
 
