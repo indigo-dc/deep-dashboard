@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import asyncio
 import base64
 import collections
 import concurrent.futures
@@ -133,7 +132,6 @@ async def init(args):
     app.add_routes(modules.routes)
 
     if CONF.cache.memcached_ip:
-        loop = asyncio.get_event_loop()
         mc = aiomcache.Client(CONF.cache.memcached_ip,
                               CONF.cache.memcached_port)
         sess_storage = aiohttp_session.memcached_storage.MemcachedStorage(

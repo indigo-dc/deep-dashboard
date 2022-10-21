@@ -51,7 +51,8 @@ async def get_deployments(request):
     try:
         request.context["deployments"] = cli.deployments.list()
 
-        # Make creation times readable: 2022-10-21T09:22+0000 --> 2022-10-21 09:22
+        # Make creation times readable:
+        # 2022-10-21T09:22+0000 --> 2022-10-21 09:22
         for dep in request.context["deployments"]:
             day, hour = dep.creationTime.split('T')
             dep.creationTime = f'{day} 🕑 {hour[:5]}'
