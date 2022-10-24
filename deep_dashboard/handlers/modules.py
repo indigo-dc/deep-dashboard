@@ -191,6 +191,7 @@ async def configure_module_training(request):
 
     inputs['docker_image']['default'] += ':{}'.format(docker_tag)
 
+    # Group tosca options
     grouped = {
         "docker": {},
         "jupyter": {},
@@ -213,6 +214,11 @@ async def configure_module_training(request):
             grouped["hardware"][k] = v
         else:
             grouped["other"][k] = v
+
+    # Remove empty groups
+    for k, v in list(grouped.items()):
+        if not v:
+            del grouped[k]
 
     template_meta = {
         "inputs": inputs,
