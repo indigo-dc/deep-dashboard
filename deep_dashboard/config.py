@@ -112,8 +112,8 @@ URL of the DEEP tosca templates repository.
     cfg.DictOpt(
         "common-toscas",
         default={
-            "default": "deep-oc-marathon-webdav.yml",
-            "minimal": "deep-oc-marathon.yml",
+            "default (with remote storage)": "deep-oc-marathon-webdav.yml",
+            "default (without remote storage)": "deep-oc-marathon-minimal.yml",
         },
     ),
 ]
