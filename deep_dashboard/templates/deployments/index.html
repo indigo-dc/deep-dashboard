@@ -6,12 +6,12 @@
  - Deployment list
 {% endblock %}
 {% block content %}
- 
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h2>My deployments <span class="fas fa-cogs"></span></h2>
 </div>
- 
-{% include 'flashed_messages.html' %} 
+
+{% include 'flashed_messages.html' %}
 
 <table class="table table-striped table-hover" id="tableUserDeployments">
     <thead>
@@ -62,7 +62,7 @@
                                 <a class="dropdown-item" target="_blank" href='{{ deployment.outputs['monitor_endpoint'] }}'>Monitor</a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href='{{ url('deployments.history', uuid=deployment.uuid) }}'>History</a> 
+                                <a class="dropdown-item" href='{{ url('deployments.history', uuid=deployment.uuid) }}'>History</a>
                             </li>
                         </ul>
                     </div>
@@ -76,7 +76,7 @@
                                 <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#details{{deployment.uuid}}"><span class="fas fa-bars mr-2 grey-text"></span>Details</a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url('deployments.template', uuid=deployment.uuid) }}"><span class="fas fa-search mr-2 grey-text"></span>Show template</a> 
+                                <a class="dropdown-item" href="{{ url('deployments.template', uuid=deployment.uuid) }}"><span class="fas fa-search mr-2 grey-text"></span>Show template</a>
                             </li>
                         </ul>
                     </div>
@@ -158,11 +158,11 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="headingTwo">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <button class="accordion-button collapse show" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
                                 Outputs
                             </button>
                         </h2>
-                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordion_{{ deployment.uuid }}">
+                        <div id="collapseTwo" class="accordion-collapse collapse show" aria-labelledby="headingTwo" data-bs-parent="#accordion_{{ deployment.uuid }}">
                             <div class="accordion-body">
                                 <ul class="list-group">
                                     {% for k,v in deployment.outputs.items() %}
