@@ -57,6 +57,9 @@ async def get_deployments(request):
             day, hour = dep.creationTime.split('T')
             dep.creationTime = f'{day} 🕑 {hour[:5]}'
 
+            day, hour = dep.updateTime.split('T')
+            dep.updateTime = f'{day} 🕑 {hour[:5]}'
+
     except orpy.exceptions.ClientException as e:
         flash.flash(
             request,
