@@ -40,7 +40,14 @@
                 <span class="badge bg-danger">{{ deployment.status }}</span>
                 {% endif %}
             </td>
-            <td>{{deployment.outputs['Docker_image']}}</td>
+            <td>
+              {% if deployment.outputs['deployment_description'] %}
+                <a href="#" class="text-decoration-none" data-toggle="tooltip" title="{{ deployment.outputs['deployment_description'] }}">
+                  <i class="fas fa-info-circle"></i> &nbsp;
+                </a>
+              {% endif %}
+              {{deployment.outputs['Docker_image']}}
+            </td>
             <td>{{deployment.outputs['Docker_num_gpus']}}</td>
             <td>{{deployment.creationTime}}</td>
             <td>{{deployment.cloudProviderName}}</td>
