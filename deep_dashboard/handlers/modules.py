@@ -162,7 +162,7 @@ async def configure_module_training(request):
     elif run_command == 'jupyterlab':
         flash.flash(
             request,
-            ("warning", 'Remember to set a Jupyter password.')
+            ("warning", 'Remember to set a Jupyter password (mandatory).')
         )
         inputs['run_command']['default'] = (
             '/srv/.jupyter/run_jupyter.sh --allow-root'

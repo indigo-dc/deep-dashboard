@@ -12,7 +12,12 @@
     <h2>Configure training: {% if module_meta['title'] is defined %}{{ module_meta['title'] }}{% else %}{{ modulename }}{% endif %}</h2>
 </div>
 
-{% include 'flashed_messages.html' %} 
+{% include 'flashed_messages.html' %}
+
+<div class="pt-3 pb-2 mb-3">
+  Start by configuring the <b>General configuration</b>, as it will prefill the <b>Specific configuration</b> with proper values.
+  Once you have this dialed out, you can proceed to finetune the <b>Specific configuration</b> to your needs (eg. increase number of CPUs).
+</div>
 
 <div class="accordion mb-3" id="accordion_config">
     <div class="accordion-item">
@@ -23,7 +28,8 @@
         </h2>
         <div id="collapseGeneral" class="accordion-collapse collapse show" aria-labelledby="headingGeneral">
             <div class="accordion-body">
-                <form class="row g-3"  action="{{ url('module.train', module=selected_module) }}"   >
+                <form class="row g-3"  action="{{ url('module.train', module=selected_module) }}">
+
                     <div class="col-md-6">
                         <label for="selected_tosca" class="form-label"><strong>Template:</strong></label>
                         <select class="form-select" aria-label="Select an available template" id="selected_tosca" name="selected_tosca" onchange="this.form.submit()">
@@ -36,6 +42,7 @@
                     {% endfor %}
                         </select>
                     </div>
+
                     <div class="col-md-6">
                         <label for="run_command" class="form-label"><strong>Command:</strong></label>
                         <select class="form-select" aria-label="Select an available command to execute" id="run_command" name="run_command" onchange="this.form.submit()">
@@ -47,6 +54,11 @@
                         {% endif %}
                     {% endfor %}
                         </select>
+                      <small class="form-text">
+                        When selecting DEEPaaS you won't be able to use JupyterLab, and vice versa.
+                        If you want to have access to both services at the same time your best option is to deploy
+                        with JupyterLab, then open a terminal window and run DEEPaaS yourself typing `deepaas-run`.
+                      </small>
                     </div>
 
                     <div class="col-md-6">
@@ -61,6 +73,7 @@
                     {% endfor %}
                         </select>
                     </div>
+
                     <div class="col-md-6">
                         <label for="docker_tag" class="form-label"><strong>Docker tag:</strong></label>
                         <select class="form-select" aria-label="Select an available Docker tag" id="docker_tag" name="docker_tag" onchange="this.form.submit()">
@@ -72,7 +85,10 @@
                         {% endif %}
                     {% endfor %}
                         </select>
-                        <small class="form-text">You should choose the appropriate tag for your selected hardware. Check module documentation for more details if unsure.</small>
+                        <small class="form-text">
+                          You should choose the appropriate tag for your selected hardware.
+                          Check the <a href="https://marketplace.deep-hybrid-datacloud.eu/modules/{{ selected_module }}.html">module documentation</a> for more details if unsure.
+                        </small>
                     </div>
                 </form>
             </div>
@@ -119,11 +135,11 @@
             <div id="collapseAdvanced" class="accordion-collapse collapse" aria-labelledby="headingAdvanced">
                 <div class="accordion-body">
                     <div class="row g-3">
-                        <div class="mt-0 border-bottom"> 
+                        <div class="mt-0 border-bottom">
                             <h5 class="mt-4">Template name</h5>
                             <fieldset id="f-template">
                                 <div class="row g-3 mb-3">
-                                    <div class="col-md-6"> 
+                                    <div class="col-md-6">
                                         <input class="form-control" id="template" name="template" type="text" value="{{ template_name }}" aria-label="TOSCA template" readonly>
                                     </div>
                                 </div>
