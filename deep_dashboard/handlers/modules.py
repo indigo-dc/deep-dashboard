@@ -165,7 +165,7 @@ async def configure_module_training(request):
             ("warning", 'Remember to set a Jupyter password (mandatory).')
         )
         inputs['run_command']['default'] = (
-            '/srv/.jupyter/run_jupyter.sh --allow-root'
+            '/srv/.deep-start/run_jupyter.sh --allow-root'
         )
         if hardware_configuration == 'gpu':
             inputs['run_command']['default'] = (
