@@ -34,10 +34,10 @@
                 <span class="badge bg-success">{{ deployment.status }}</span>
                 {% elif "FAIL" in deployment.status %}
                 <span class="badge bg-danger">{{ deployment.status }}</span>
-                {% elif "CREATE_IN_PROGRESS" in deployment.status %}
+                {% elif "PROGRESS" in deployment.status %}
                 <span class="badge bg-warning">{{ deployment.status }}</span>
                 {% else %}
-                <span class="badge bg-danger">{{ deployment.status }}</span>
+                <span class="badge bg-info">{{ deployment.status }}</span>
                 {% endif %}
             </td>
             <td>
